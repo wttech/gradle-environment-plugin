@@ -1,37 +1,58 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     `java-gradle-plugin`
     `maven-publish`
     id("org.jetbrains.kotlin.jvm") version "1.3.41"
 }
 
+defaultTasks("publishToMavenLocal")
+description = "Gradle Environment Plugin"
+group = "com.cognifide.gradle"
+
 repositories {
+    mavenLocal()
     jcenter()
 }
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-}
-
-gradlePlugin {
-    val greeting by plugins.creating {
-        id = "com.cognifide.gradle.environment"
-        implementationClass = "com.cognifide.gradle.environment.EnvironmentPlugin"
-    }
+    implementation("com.cognifide.gradle:common-plugin:1.0.0")
+    implementation("org.buildobjects:jproc:2.2.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
+    implementation("org.apache.commons:commons-lang3:3.9")
+    implementation("commons-io:commons-io:2.6")
+    implementation("org.apache.httpcomponents:httpclient:4.5.10")
 }
 
 val functionalTestSourceSet = sourceSets.create("functionalTest") {}
-
 gradlePlugin.testSourceSets(functionalTestSourceSet)
 configurations.getByName("functionalTestImplementation").extendsFrom(configurations.getByName("testImplementation"))
 
-val functionalTest by tasks.creating(Test::class) {
-    testClassesDirs = functionalTestSourceSet.output.classesDirs
-    classpath = functionalTestSourceSet.runtimeClasspath
+tasks {
+    register<Test>("functionalTest") {
+        testClassesDirs = functionalTestSourceSet.output.classesDirs
+        classpath = functionalTestSourceSet.runtimeClasspath
+    }
+
+    named("check") {
+        dependsOn("functionalTest")
+    }
+
+    withType<KotlinCompile>().configureEach {
+        kotlinOptions {
+            jvmTarget = JavaVersion.VERSION_1_8.toString()
+            freeCompilerArgs = freeCompilerArgs + "-Xuse-experimental=kotlin.Experimental"
+        }
+    }
 }
 
-val check by tasks.getting(Task::class) {
-    dependsOn(functionalTest)
+gradlePlugin {
+    plugins {
+        create("environment") {
+            id = "com.cognifide.gradle.environment"
+            implementationClass = "com.cognifide.gradle.environment.EnvironmentPlugin"
+        }
+    }
 }
