@@ -23,7 +23,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("commons-io:commons-io:2.6")
-    implementation("org.apache.httpcomponents:httpclient:4.5.10")
+    implementation("org.apache.httpcomponents:httpclient:4.5.10") // TODO probably not needed
 }
 
 val functionalTestSourceSet = sourceSets.create("functionalTest") {}
