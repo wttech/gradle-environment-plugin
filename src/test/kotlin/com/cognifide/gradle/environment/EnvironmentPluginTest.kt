@@ -1,16 +1,27 @@
 package com.cognifide.gradle.environment
 
+import com.cognifide.gradle.common.utils.using
+import com.cognifide.gradle.environment.tasks.*
 import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 class EnvironmentPluginTest {
-    @Test fun `plugin registers task`() {
-        // Create a test project and apply the plugin
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply("com.cognifide.gradle.environment")
 
-        // Verify the result
-        assertNotNull(project.tasks.findByName("greeting"))
+    @Test
+    fun `plugin registers extension and tasks`() = using(ProjectBuilder.builder().build()) {
+        plugins.apply(EnvironmentPlugin.ID)
+
+        extensions.getByName(EnvironmentExtension.NAME)
+        tasks.getByName(EnvironmentAwait.NAME)
+        tasks.getByName(EnvironmentDestroy.NAME)
+        tasks.getByName(EnvironmentDev.NAME)
+        tasks.getByName(EnvironmentDown.NAME)
+        tasks.getByName(EnvironmentHosts.NAME)
+        tasks.getByName(EnvironmentReload.NAME)
+        tasks.getByName(EnvironmentResetup.NAME)
+        tasks.getByName(EnvironmentResolve.NAME)
+        tasks.getByName(EnvironmentRestart.NAME)
+        tasks.getByName(EnvironmentUp.NAME)
     }
+
 }

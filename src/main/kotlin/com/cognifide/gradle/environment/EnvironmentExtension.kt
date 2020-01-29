@@ -9,7 +9,7 @@ import org.gradle.api.Project
 import java.io.File
 import java.io.Serializable
 
-class EnvironmentExtension(val project: Project) : Serializable {
+open class EnvironmentExtension(val project: Project) : Serializable {
 
     val common = CommonExtension.of(project)
 
@@ -139,3 +139,5 @@ class EnvironmentExtension(val project: Project) : Serializable {
         }
     }
 }
+
+val Project.environment get() = EnvironmentExtension.of(this)

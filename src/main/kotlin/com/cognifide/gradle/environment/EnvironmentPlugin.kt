@@ -13,7 +13,7 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
     }
 
     private fun Project.setupExtension() {
-        extensions.create(EnvironmentExtension.NAME, EnvironmentExtension::class.java)
+        extensions.create(EnvironmentExtension.NAME, EnvironmentExtension::class.java, this)
     }
 
     private fun Project.setupTasks() = tasks {
@@ -81,7 +81,7 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
     }
 
     companion object {
-        const val ID = "com.cognifide.aem.environment"
+        const val ID = "com.cognifide.environment"
     }
 
 }

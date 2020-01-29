@@ -18,12 +18,18 @@ repositories {
 }
 
 dependencies {
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
     implementation("com.cognifide.gradle:common-plugin:1.0.0")
     implementation("org.buildobjects:jproc:2.2.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("commons-io:commons-io:2.6")
     implementation("org.apache.httpcomponents:httpclient:4.5.10") // TODO probably not needed
+
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
 val functionalTestSourceSet = sourceSets.create("functionalTest") {}
@@ -51,7 +57,7 @@ tasks {
 gradlePlugin {
     plugins {
         create("environment") {
-            id = "com.cognifide.gradle.environment"
+            id = "com.cognifide.environment"
             implementationClass = "com.cognifide.gradle.environment.EnvironmentPlugin"
         }
     }
