@@ -22,6 +22,8 @@ class HostOptions(environment: EnvironmentExtension) : Serializable {
 
     var ipDefault = environment.docker.runtime.hostIp
 
+    operator fun String.invoke(options: Host.() -> Unit = {}) = define(this, options)
+
     fun define(url: String, options: Host.() -> Unit = {}) {
         defined.add(Host(url).apply { ip = ipDefault; options() })
     }
@@ -32,20 +34,18 @@ class HostOptions(environment: EnvironmentExtension) : Serializable {
 
     fun find(vararg tags: String) = find(tags.asIterable())
 
-    fun find(tags: Iterable<String>) = all(tags).first()
+    fun find(tags: Iterable<String>) = all(tags).firstOrNull()
+
+    operator fun get(tag: String): Host = get(tag)
+
+    fun get(vararg tags: String) = get(tags.asIterable())
+
+    fun get(tags: Iterable<String>) = find(tags)
+            ?: throw EnvironmentException("Environment has no host tagged with '${tags.joinToString(",")}'!")
 
     fun all(vararg tags: String) = all(tags.asIterable())
 
     fun all(tags: Iterable<String>) = defined.filter { h -> tags.all { t -> h.tags.contains(t) } }.ifEmpty {
         throw EnvironmentException("Environment has no hosts tagged with '${tags.joinToString(",")}'!")
-    }
-
-    companion object {
-
-        const val TAG_AUTHOR = "author"
-
-        const val TAG_PUBLISH = "publish"
-
-        const val TAG_OTHER = "other"
     }
 }

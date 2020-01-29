@@ -8,7 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.41"
 }
 
-defaultTasks("publishToMavenLocal")
+defaultTasks("clean", "publishToMavenLocal")
 description = "Gradle Environment Plugin"
 group = "com.cognifide.gradle"
 
