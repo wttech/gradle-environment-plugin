@@ -9,9 +9,10 @@
 
   * [About](#about)
   * [Setup](#setup)
-  * [Configuration](#configuration)
+  * [Prerequisites](#prerequisites)
      * [Notice for Docker on Windows](#notice-for-docker-on-windows)
      * [Notice for Docker Toolbox](#notice-for-docker-toolbox)
+  * [Configuration](#configuration)
   * [Health checks](#health-checks)
   * [Task environmentUp](#task-environmentup)
   * [Task environmentDown](#task-environmentdown)
@@ -31,12 +32,12 @@ Web Server is deployed as [Docker Container](https://www.docker.com/resources/wh
 Provides environment related tasks: `environmentUp`, `environmentDev`, `environmentHosts` etc.
 
 Should be applied only at root project / only once within whole build.
-
+    
 ## Setup
 
 As of plugin is published at official Gradle Plugin Portal, see instructions from [there](https://plugins.gradle.org/plugin/com.cognifide.environment).
 
-## Configuration
+## Prerequisites
 
 Most of the configuration steps are automated. However, there are three manual steps to make this setup fully operating:
 
@@ -64,6 +65,55 @@ When running task `environmentUp` first time, Windows User Account Control (UAC)
 
 While using Docker Toolbox, beware that, by default, there is only one shared folder in VirtualBox configured which mounts *C:/Users* to */c/users* on Docker Machine / Ubuntu. 
 As a consequence, if project is located outside of *C:/Users* directory, there is a need to manually add corresponding shared folder and mount it on Docker Machine using VirtualBox GUI.
+
+## Configuration
+
+Illustrative example:
+
+```kotlin
+environment { // config for AEM environment running on Docker
+    rootDir = prop.string("environment.rootDir")?.let { project.file(it) } ?: projectMain.file(".environment")
+    hosts { // domains to be appended to hosts file automatically
+        author("http://author.example.com")
+        publish("http://demo.example.com") { tag("test") }
+        publish("http://example.com") { tag("live") }
+        other("http://dispatcher.example.com")
+    }
+    docker { // Docker specific configuration
+        containers {
+            "httpd" { // control container described in 'docker-compose.yml.peb'
+                resolve {
+                    resolveFiles {
+                        download("http://download.macromedia.com/dispatcher/download/dispatcher-apache2.4-linux-x86_64-4.3.2.tar.gz").use {
+                            copyArchiveFile(it, "**/dispatcher-apache*.so", file("modules/mod_dispatcher.so"))
+                        }
+                    }
+                    ensureDir("cache", "logs")
+                }
+                up {
+                    ensureDir("/usr/local/apache2/logs", "/opt/aem/dispatcher/cache/content/example/demo", "/opt/aem/dispatcher/cache/content/example/live")
+                    execShell("Starting HTTPD server", "/usr/local/apache2/bin/httpd -k start")
+                }
+                reload {
+                    cleanDir("/opt/aem/dispatcher/cache/content/example/demo", "/opt/aem/dispatcher/cache/content/example/live")
+                    execShell("Restarting HTTPD server", "/usr/local/apache2/bin/httpd -k restart")
+                }
+                dev {
+                    watchConfigDir("conf")
+                }
+            }
+        }                        
+    }
+    healthChecks { // checks (e.g GET requests) verifying running Docker containers like HTTPD
+          url("Live site", "http://example.com/en-us.html") { containsText("English US") }
+          url("Demo site", "http://demo.example.com/en-us.html") { containsText("English US") }
+          url("Author module 'Sites'", "http://author.example.com/sites.html") {
+              options { basicCredentials = authorInstance.credentials }
+              containsText("Sites")
+          }
+    }
+}
+```
 
 ## Health checks
 
