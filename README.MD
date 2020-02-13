@@ -7,15 +7,23 @@
 
 # Gradle Environment Plugin
 
+  * [About](#about)
+  * [Setup](#setup)
+  * [Configuration](#configuration)
+     * [Notice for Docker on Windows](#notice-for-docker-on-windows)
+     * [Notice for Docker Toolbox](#notice-for-docker-toolbox)
+  * [Health checks](#health-checks)
+  * [Task environmentUp](#task-environmentup)
+  * [Task environmentDown](#task-environmentdown)
+  * [Task environmentDev](#task-environmentdev)
+  * [Task environmentAwait](#task-environmentawait)
+  * [Task environmentReload](#task-environmentreload)
+  * [Task environmentHosts](#task-environmenthosts)
+  * [License](#license)
+
 ## About
 
 Provides seamless Gradle integration with Docker & Swarm.
-
-## Setup
-
-As of plugin is published at official Gradle Plugin Portal, see instructions from [there](https://plugins.gradle.org/plugin/com.cognifide.environment).
-
-## About
 
 Controls virtualized environment consisting of Apache Web Server (HTTPD).
 Web Server is deployed as [Docker Container](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
@@ -23,6 +31,10 @@ Web Server is deployed as [Docker Container](https://www.docker.com/resources/wh
 Provides environment related tasks: `environmentUp`, `environmentDev`, `environmentHosts` etc.
 
 Should be applied only at root project / only once within whole build.
+
+## Setup
+
+As of plugin is published at official Gradle Plugin Portal, see instructions from [there](https://plugins.gradle.org/plugin/com.cognifide.environment).
 
 ## Configuration
 
