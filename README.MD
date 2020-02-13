@@ -1,0 +1,113 @@
+[![Cognifide logo](docs/cognifide-logo.png)](http://cognifide.com)
+
+[![Download](https://api.bintray.com/packages/cognifide/maven-public/gradle-environment-plugin/images/download.svg) ](https://bintray.com/cognifide/maven-public/gradle-environment-plugin/_latestVersion)
+[![Build Status](https://dev.azure.com/gradle-aem/gradle-environment-plugin/_apis/build/status/Continuous%20Check?branchName=master)](https://dev.azure.com/gradle-aem/gradle-environment-plugin/_build/latest?definitionId=6&branchName=master)
+[![Gradle Status](https://gradleupdate.appspot.com/Cognifide/gradle-environment-plugin/status.svg?random=123)](https://gradleupdate.appspot.com/Cognifide/gradle-environment-plugin/status)
+[![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
+
+# Gradle Environment Plugin
+
+## About
+
+Provides seamless Gradle integration with Docker & Swarm.
+
+## Setup
+
+As of plugin is published at official Gradle Plugin Portal, see instructions from [there](https://plugins.gradle.org/plugin/com.cognifide.environment).
+
+## About
+
+Controls virtualized environment consisting of Apache Web Server (HTTPD).
+Web Server is deployed as [Docker Container](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
+
+Provides environment related tasks: `environmentUp`, `environmentDev`, `environmentHosts` etc.
+
+Should be applied only at root project / only once within whole build.
+
+## Configuration
+
+Most of the configuration steps are automated. However, there are three manual steps to make this setup fully operating:
+
+1. [Install Docker](https://docs.docker.com/install/)
+    * [Mac](https://docs.docker.com/docker-for-mac/)
+    * [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+    * Windows
+        * [Desktop](https://docs.docker.com/docker-for-windows/install/) (highly recommended, using Hyper-V)
+        * [Toolbox](https://docs.docker.com/toolbox/toolbox_install_windows/) (legacy, using VirtualBox)
+
+2. Setup hosts on local machine (admin rights are required to access `/etc/hosts` or `C:\Windows\System32\drivers\etc\hosts` file)
+    * Unix: execute `sudo gradlew environmentHosts --no-daemon`
+    * Windows: start PowerShell with "Run as administrator", then execute `./gradlew.bat environmentHosts --no-daemon`
+    
+### Notice for Docker on Windows
+
+Ensure having shared folders enabled via GUI:
+
+![Docker Desktop Shared Drive](docs/docker-desktop-share.png)
+
+Please note that after each Windows credentials change (e.g forced by company policy), it is required to click button "Reset credentials" to ensure having shared drives working correctly.
+When running task `environmentUp` first time, Windows User Account Control (UAC) may require user confirmation to allow virtualized container to access local configuration files stored on shared drives.
+
+### Notice for Docker Toolbox
+
+While using Docker Toolbox, beware that, by default, there is only one shared folder in VirtualBox configured which mounts *C:/Users* to */c/users* on Docker Machine / Ubuntu. 
+As a consequence, if project is located outside of *C:/Users* directory, there is a need to manually add corresponding shared folder and mount it on Docker Machine using VirtualBox GUI.
+
+## Health checks
+
+In case of the dispatcher it takes few seconds to start. Service health checks could be described by following configuration.
+For example, to wait for all domains to be available and having particular text in response, write:
+
+```kotlin
+environment {
+    healthChecks {
+        url("Live site", "http://example.com/en-us.html", text = "English")
+        url("Demo site", "http://demo.example.com/en-us.html", text = "English")
+    }
+}
+```
+
+These checks are performed automatically after each file change applied when running task `environmentDev` or on demand when running task `environmentAwait`.
+
+## Task `environmentUp`
+
+Turns on local environment.
+
+![Environment up task](docs/environment-up-task.gif)
+
+## Task `environmentDown`
+
+Turns off local environment.
+
+![Environment down task](docs/environment-down-task.gif)
+
+## Task `environmentDev`
+
+Allows to listen for Apache Web Server / Dispatcher configuration files changed and then automatically reload HTTP service.
+
+Workflow:
+
+1. Run command `gradlew environmentDev`,
+2. Edit files located in *src/environment/httpd/conf* ,
+3. Notice that HTTPD service should be restarted automatically after file changes,
+4. Check results of [health checks](#health-checks),
+4. Optionally, check:
+   * HTTPD logs located at path *.environment/httpd/logs*
+   
+![Environment dev task](docs/environment-dev-task.gif)
+
+## Task `environmentAwait`
+
+Performs [environment service health checks](#environment-service-health-checks) on demand.
+
+## Task `environmentReload`
+
+Reloads virtualized environment by reloading all Docker containers (e.g. removing Dispatcher cache files then restarting HTTPD server).
+
+## Task `environmentHosts`
+
+Appends environment specific hosts entries to OS specific hosts file.
+
+## License
+
+**Gradle Environment Plugin** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt)
