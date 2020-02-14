@@ -1,15 +1,21 @@
 package com.cognifide.gradle.environment
 
 import com.cognifide.gradle.common.CommonDefaultPlugin
+import com.cognifide.gradle.common.RuntimePlugin
+import com.cognifide.gradle.common.tasks.runtime.*
 import com.cognifide.gradle.environment.tasks.*
 import org.gradle.api.Project
 
-// TODO
 class EnvironmentPlugin : CommonDefaultPlugin() {
 
     override fun Project.configureProject() {
+        setupDependentPlugins()
         setupExtension()
         setupTasks()
+    }
+
+    private fun Project.setupDependentPlugins() {
+        plugins.apply(RuntimePlugin::class.java)
     }
 
     private fun Project.setupExtension() {
@@ -21,9 +27,6 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
 
         register(EnvironmentUp.NAME, EnvironmentUp::class.java) {
             mustRunAfter(EnvironmentResolve.NAME, EnvironmentDown.NAME, EnvironmentDestroy.NAME)
-            /*           plugins.withId(InstancePlugin.ID) {
-                           mustRunAfter(InstanceUp.NAME, InstanceSatisfy.NAME, InstanceProvision.NAME, InstanceSetup.NAME)
-                       }*/
         }
         register<EnvironmentRestart>(EnvironmentRestart.NAME) {
             dependsOn(EnvironmentDown.NAME, EnvironmentUp.NAME)
@@ -40,9 +43,6 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
         }
         register<EnvironmentAwait>(EnvironmentAwait.NAME) {
             mustRunAfter(EnvironmentUp.NAME)
-            /*       plugins.withId(InstancePlugin.ID) {
-                       mustRunAfter(InstanceAwait.NAME)
-                   }*/
         }
         register<EnvironmentReload>(EnvironmentReload.NAME) {
             mustRunAfter(EnvironmentUp.NAME)
@@ -50,34 +50,32 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
         register<EnvironmentHosts>(EnvironmentHosts.NAME)
         register<EnvironmentResolve>(EnvironmentResolve.NAME)
 
-        // Common lifecycle
-
-        /*
-        registerOrConfigure<Up>(Up.NAME) {
+        // Runtime lifecycle
+        
+        named<Up>(Up.NAME) {
             dependsOn(EnvironmentUp.NAME)
         }
-        registerOrConfigure<Down>(Down.NAME) {
+        named<Down>(Down.NAME) {
             dependsOn(EnvironmentDown.NAME)
         }
-        registerOrConfigure<Destroy>(Destroy.NAME) {
+        named<Destroy>(Destroy.NAME) {
             dependsOn(EnvironmentDestroy.NAME)
         }
-        registerOrConfigure<Restart>(Restart.NAME) {
+        named<Restart>(Restart.NAME) {
             dependsOn(EnvironmentRestart.NAME)
         }
-        registerOrConfigure<Setup>(Setup.NAME) {
+        named<Setup>(Setup.NAME) {
             dependsOn(EnvironmentUp.NAME)
         }
-        registerOrConfigure<Resetup>(Resetup.NAME) {
+        named<Resetup>(Resetup.NAME) {
             dependsOn(EnvironmentResetup.NAME)
         }
-        registerOrConfigure<Resolve>(Resolve.NAME) {
+        named<Resolve>(Resolve.NAME) {
             dependsOn(EnvironmentResolve.NAME)
         }
-        registerOrConfigure<Await>(Await.NAME) {
+        named<Await>(Await.NAME) {
             dependsOn(EnvironmentAwait.NAME)
         }
-         */
     }
 
     companion object {

@@ -28,7 +28,7 @@ class HostFileManager(val container: Container) {
 
     fun resolveFiles(options: FileResolver.() -> Unit): List<File> {
         logger.info("Resolving files for container '${container.name}'")
-        val files = aem.resolveFiles(fileDir, options)
+        val files = aem.resolveFiles(options)
         logger.info("Resolved files for container '${container.name}':\n${files.joinToString("\n")}")
 
         return files
