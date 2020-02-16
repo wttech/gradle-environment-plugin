@@ -2,8 +2,9 @@ package com.cognifide.gradle.environment
 
 import java.io.File
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class EnvironmentPluginFunctionalTest {
 
@@ -27,7 +28,7 @@ class EnvironmentPluginFunctionalTest {
         runner.withProjectDir(projectDir)
         val result = runner.build();
 
-        // Verify the result TODO
-        // assertTrue(result.output.contains("Hello from plugin 'com.cognifide.gradle.environment.greeting'"))
+        // Verify the result
+        assertEquals(TaskOutcome.SUCCESS, result.task(":environmentHosts")?.outcome)
     }
 }
