@@ -17,7 +17,7 @@ open class Reloader(val environment: EnvironmentExtension) {
 
     private val allContainers get() = environment.docker.containers.defined
 
-    private val watchedContainers get() = allContainers.filter { it.devOptions.watchDirs.isNotEmpty() }
+    private val watchedContainers get() = allContainers.filter { it.devOptions.watchDirs.files.isNotEmpty() }
 
     private val fileChanges = Channel<ContainerFileEvent>(Channel.UNLIMITED)
 
@@ -36,7 +36,7 @@ open class Reloader(val environment: EnvironmentExtension) {
     private fun CoroutineScope.watchContainerFileChanges() {
         watchedContainers.map { container ->
             FileWatcher(common).apply {
-                dirs = container.devOptions.watchDirs
+                dirs = container.devOptions.watchDirs.files.toList()
                 onChange = { event ->
                     GlobalScope.launch {
                         fileChanges.send(ContainerFileEvent(container, event))

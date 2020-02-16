@@ -38,6 +38,7 @@ class Container(val docker: Docker, val name: String) {
 
     fun up(action: Container.() -> Unit) {
         upAction = action
+        lockRequired.add(LOCK_UP)
     }
 
     var reloadAction: Container.() -> Unit = {}
@@ -92,6 +93,8 @@ class Container(val docker: Docker, val name: String) {
 
     val up: Boolean
         get() = running && isLocked(LOCK_UP)
+
+    private val lockRequired = mutableSetOf<String>()
 
     var awaitRetry = common.retry { afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 30) }
 
@@ -209,11 +212,17 @@ class Container(val docker: Docker, val name: String) {
         return DockerProcess.execSpec(customSpec)
     }
 
-    fun lock(name: String) {
-        execShellQuiet("mkdir -p $LOCK_ROOT && touch $LOCK_ROOT/$name")
+    private fun isLockRequired(name: String) = lockRequired.contains(name)
+
+    private fun lock(name: String) {
+        if (isLockRequired(name)) {
+            execShellQuiet("mkdir -p $LOCK_ROOT && touch $LOCK_ROOT/$name")
+        }
     }
 
-    fun isLocked(name: String): Boolean = execShellQuiet("test -f $LOCK_ROOT/$name", null).exitCode == 0
+    private fun isLocked(name: String): Boolean {
+        return !isLockRequired(name) || execShellQuiet("test -f $LOCK_ROOT/$name", null).exitCode == 0
+    }
 
     companion object {
         const val LOCK_ROOT = "/var/gap/lock"

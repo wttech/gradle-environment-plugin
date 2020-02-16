@@ -1,17 +1,16 @@
 package com.cognifide.gradle.environment.docker.container
 
 import com.cognifide.gradle.environment.docker.Container
-import java.io.File
 
 class DevOptions(val container: Container) {
 
-    var watchDirs = mutableListOf<File>()
+    val watchDirs = container.common.obj.files()
 
-    fun watchDir(vararg files: File) = files.forEach {
-        watchDirs.add(it)
+    fun watchDir(vararg paths: Any) {
+        watchDirs.from(paths)
     }
 
     fun watchConfigDir(vararg paths: String) = paths.forEach {
-        watchDirs.add(File(container.host.configDir, it))
+        watchDir(container.host.configDir.dir(it))
     }
 }

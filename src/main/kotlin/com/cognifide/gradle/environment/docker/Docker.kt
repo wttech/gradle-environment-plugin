@@ -5,7 +5,6 @@ import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.StringUtils
-import java.io.File
 import java.io.FileOutputStream
 
 class Docker(val environment: EnvironmentExtension) {
@@ -14,11 +13,9 @@ class Docker(val environment: EnvironmentExtension) {
 
     private val common = environment.common
 
-    val running: Boolean
-        get() = stack.running && containers.running
+    val running: Boolean get() = stack.running && containers.running
 
-    val up: Boolean
-        get() = stack.running && containers.up
+    val up: Boolean get() = stack.running && containers.up
 
     /**
      * Represents Docker stack named 'aem' and provides API for manipulating it.
@@ -37,19 +34,17 @@ class Docker(val environment: EnvironmentExtension) {
         containers.apply(options)
     }
 
-    val runtime by lazy { Runtime.determine(environment) }
+    val runtime = common.obj.typed<Runtime> {
+        convention(common.obj.provider { Runtime.determine(environment) })
+    }
 
-    val composeFile
-        get() = File(environment.rootDir, "docker-compose.yml")
+    val composeFile = common.obj.relativeFile(environment.rootDir, "docker-compose.yml")
 
-    val composeTemplateFile: File
-        get() = File(environment.sourceDir, "docker-compose.yml.peb")
+    val composeTemplateFile = common.obj.relativeFile(environment.sourceDir, "docker-compose.yml.peb")
 
-    val configPath: String
-        get() = runtime.determinePath(environment.sourceDir)
+    val configPath: String get() = runtime.get().determinePath(environment.sourceDir.get().asFile)
 
-    val rootPath: String
-        get() = runtime.determinePath(environment.rootDir)
+    val rootPath: String get() = runtime.get().determinePath(environment.rootDir.get().asFile)
 
     fun init() {
         syncComposeFile()
@@ -57,15 +52,18 @@ class Docker(val environment: EnvironmentExtension) {
     }
 
     private fun syncComposeFile() {
-        logger.info("Generating Docker compose file '$composeFile' from template '$composeTemplateFile'")
+        val templateFile = composeTemplateFile.get().asFile
+        val targetFile = composeFile.get().asFile
 
-        if (!composeTemplateFile.exists()) {
-            throw DockerException("Docker compose file template does not exist: $composeTemplateFile")
+        logger.info("Generating Docker compose file '$targetFile' from template '$templateFile'")
+
+        if (!templateFile.exists()) {
+            throw DockerException("Docker compose file template does not exist: $templateFile")
         }
 
-        composeFile.takeIf { it.exists() }?.delete()
-        composeTemplateFile.copyTo(composeFile)
-        common.prop.expand(composeFile, mapOf("docker" to this))
+        targetFile.takeIf { it.exists() }?.delete()
+        templateFile.copyTo(targetFile)
+        common.prop.expand(targetFile, mapOf("docker" to this))
     }
 
     fun up() {
@@ -136,7 +134,7 @@ class Docker(val environment: EnvironmentExtension) {
             add("run")
             spec.name?.let { add("--name=$it") }
             if (spec.detached) add("-d")
-            addAll(spec.volumes.map { (localPath, containerPath) -> "-v=${runtime.determinePath(localPath)}:$containerPath" })
+            addAll(spec.volumes.map { (localPath, containerPath) -> "-v=${runtime.get().determinePath(localPath)}:$containerPath" })
             addAll(spec.ports.map { (hostPort, containerPort) -> "-p=$hostPort:$containerPort" })
             addAll(spec.options.apply { if (spec.cleanup) add("--rm") }.toSet())
             add(spec.image)

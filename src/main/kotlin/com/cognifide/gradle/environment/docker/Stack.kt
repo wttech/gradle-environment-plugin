@@ -41,8 +41,8 @@ class Stack(val environment: EnvironmentExtension) {
             withTimeoutMillis(initTimeout)
             withArgs("swarm", "init")
 
-            if (environment.docker.runtime is Toolbox) {
-                withArgs("--advertise-addr", environment.docker.runtime.hostIp)
+            if (environment.docker.runtime.get() is Toolbox) {
+                withArgs("--advertise-addr", environment.docker.runtime.get().hostIp)
             }
         }
         if (result.exitValue != 0 && !result.errorString.contains("This node is already part of a swarm")) {
@@ -57,7 +57,8 @@ class Stack(val environment: EnvironmentExtension) {
             message = "Starting stack '$internalName'"
 
             try {
-                DockerProcess.exec { withArgs("stack", "deploy", "-c", environment.docker.composeFile.path, internalName) }
+                val composeFilePath = environment.docker.composeFile.get().asFile.path
+                DockerProcess.exec { withArgs("stack", "deploy", "-c", composeFilePath, internalName) }
             } catch (e: DockerException) {
                 throw StackException("Failed to deploy Docker stack '$internalName'!", e)
             }

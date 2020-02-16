@@ -6,7 +6,6 @@ import com.cognifide.gradle.environment.health.HealthChecker
 import com.cognifide.gradle.environment.health.HealthStatus
 import com.cognifide.gradle.environment.hosts.HostOptions
 import org.gradle.api.Project
-import java.io.File
 import java.io.Serializable
 
 open class EnvironmentExtension(val project: Project) : Serializable {
@@ -15,19 +14,25 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     val logger = project.logger
 
+    val obj = common.obj
+
     val prop = common.prop
 
     /**
      * Path in which local AEM environment will be stored.
      */
-    var rootDir: File = common.prop.string("environment.rootDir")?.let { project.file(it) }
-            ?: project.file(".environment")
+    val rootDir = obj.dir {
+        convention(obj.projectDir(".environment"))
+        prop.file("environment.rootDir")?.let { set(it) }
+    }
 
     /**
      * Convention directory for storing environment specific configuration files.
      */
-    var sourceDir: File = common.prop.string("environment.sourceDir")?.let { project.file(it) }
-            ?: project.file("src/environment")
+    val sourceDir = obj.dir {
+        convention(obj.projectDir("src/environment"))
+        prop.file("environment.sourceDir")?.let { set(it) }
+    }
 
     val docker = Docker(this)
 
@@ -39,11 +44,9 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     val hosts = HostOptions(this)
 
-    val created: Boolean
-        get() = rootDir.exists()
+    val created: Boolean get() = rootDir.get().asFile.exists()
 
-    val running: Boolean
-        get() = docker.running
+    val running: Boolean get() = docker.running
 
     val up: Boolean
         get() = docker.up
@@ -85,7 +88,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
     fun destroy() {
         logger.info("Destroying: $this")
 
-        rootDir.deleteRecursively()
+        rootDir.get().asFile.deleteRecursively()
 
         logger.info("Destroyed: $this")
     }

@@ -10,22 +10,33 @@ import java.io.Serializable
  */
 class HostOptions(environment: EnvironmentExtension) : Serializable {
 
-    var defined = mutableListOf<Host>()
+    val docker = environment.docker
 
-    val appendix: String
-        get() = defined.joinToString("\n") { it.text }
+    val common = environment.common
 
-    val osFile = when {
-        OperatingSystem.current().isWindows -> """C:\Windows\System32\drivers\etc\hosts"""
-        else -> "/etc/hosts"
+    val defined = common.obj.list<Host> {
+        convention(listOf())
     }
 
-    var ipDefault = environment.docker.runtime.hostIp
+    val ipDefault = common.obj.string {
+        convention(docker.runtime.map { it.hostIp })
+    }
+
+    val osFile = common.obj.string {
+        convention(common.obj.provider {
+            when {
+                OperatingSystem.current().isWindows -> """C:\Windows\System32\drivers\etc\hosts"""
+                else -> "/etc/hosts"
+            }
+        })
+    }
+
+    val appendix: String get() = defined.get().joinToString("\n") { it.text }
 
     operator fun String.invoke(options: Host.() -> Unit = {}) = define(this, options)
 
     fun define(url: String, options: Host.() -> Unit = {}) {
-        defined.add(Host(url).apply { ip = ipDefault; options() })
+        defined.add(common.obj.provider { Host(url).apply { ip = ipDefault.get(); options() } })
     }
 
     fun define(vararg urls: String, options: Host.() -> Unit = {}) = define(urls.asIterable(), options)
@@ -45,7 +56,7 @@ class HostOptions(environment: EnvironmentExtension) : Serializable {
 
     fun all(vararg tags: String) = all(tags.asIterable())
 
-    fun all(tags: Iterable<String>) = defined.filter { h -> tags.all { t -> h.tags.contains(t) } }.ifEmpty {
+    fun all(tags: Iterable<String>) = defined.get().filter { h -> tags.all { t -> h.tags.contains(t) } }.ifEmpty {
         throw EnvironmentException("Environment has no hosts tagged with '${tags.joinToString(",")}'!")
     }
 }

@@ -16,15 +16,18 @@ class HostFileManager(val container: Container) {
 
     private val docker = container.docker
 
-    val rootDir = File(docker.environment.rootDir, container.name)
+    val rootDir = aem.obj.relativeDir(docker.environment.rootDir, container.name)
 
-    var fileDir = File(rootDir, aem.prop.string("environment.container.host.fileDir") ?: "files")
+    val fileDir = aem.obj.dir {
+        convention(rootDir.dir("files"))
+        aem.prop.file("environment.container.host.fileDir")?.let { set(it) }
+    }
 
-    fun file(path: String) = File(rootDir, path)
+    fun file(path: String) = rootDir.get().asFile.resolve(path)
 
-    val configDir = File(docker.environment.sourceDir, container.name)
+    val configDir = aem.obj.relativeDir(docker.environment.sourceDir, container.name)
 
-    fun configFile(path: String) = File(configDir, path)
+    fun configFile(path: String) = configDir.get().asFile.resolve(path)
 
     fun resolveFiles(options: FileResolver.() -> Unit): List<File> {
         logger.info("Resolving files for container '${container.name}'")
@@ -35,7 +38,7 @@ class HostFileManager(val container: Container) {
     }
 
     fun ensureDir() {
-        rootDir.apply {
+        rootDir.get().asFile.apply {
             logger.info("Ensuring root directory '$this' for container '${container.name}'")
             mkdirs()
         }
