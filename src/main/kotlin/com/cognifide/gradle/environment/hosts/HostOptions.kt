@@ -19,7 +19,7 @@ class HostOptions(environment: EnvironmentExtension) : Serializable {
     }
 
     val ipDefault = common.obj.string {
-        convention(docker.runtime.map { it.hostIp })
+        convention(common.obj.provider { docker.runtime.hostIp })
     }
 
     val osFile = common.obj.string {

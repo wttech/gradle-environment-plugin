@@ -41,8 +41,8 @@ class Stack(val environment: EnvironmentExtension) {
             withTimeoutMillis(initTimeout)
             withArgs("swarm", "init")
 
-            if (environment.docker.runtime.get() is Toolbox) {
-                withArgs("--advertise-addr", environment.docker.runtime.get().hostIp)
+            if (environment.docker.runtime is Toolbox) {
+                withArgs("--advertise-addr", environment.docker.runtime.hostIp)
             }
         }
         if (result.exitValue != 0 && !result.errorString.contains("This node is already part of a swarm")) {

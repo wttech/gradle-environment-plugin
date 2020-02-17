@@ -34,17 +34,29 @@ class Docker(val environment: EnvironmentExtension) {
         containers.apply(options)
     }
 
-    val runtime = common.obj.typed<Runtime> {
-        convention(common.obj.provider { Runtime.determine(environment) })
+    /**
+     * Represents Docker runtime specific options.
+     * On Windows there could be installed Docker distribution named  'Desktop' or 'Toolbox'.
+     */
+    val runtimeType = common.obj.typed<Runtime> {
+        convention(common.obj.provider { Runtime.detect(environment) })
+    }
+
+    fun runtimeType(name: String) {
+        runtimeType.set(Runtime.of(environment, name))
     }
 
     val composeFile = common.obj.relativeFile(environment.rootDir, "docker-compose.yml")
 
     val composeTemplateFile = common.obj.relativeFile(environment.sourceDir, "docker-compose.yml.peb")
 
-    val configPath: String get() = runtime.get().determinePath(environment.sourceDir.get().asFile)
+    // Shorthands useful to be used in template: 'docker-compose.yml.peb'
 
-    val rootPath: String get() = runtime.get().determinePath(environment.rootDir.get().asFile)
+    val runtime get() = runtimeType.get()
+
+    val configPath: String get() = runtime.determinePath(environment.sourceDir.get().asFile)
+
+    val rootPath: String get() = runtime.determinePath(environment.rootDir.get().asFile)
 
     fun init() {
         syncComposeFile()
@@ -134,7 +146,7 @@ class Docker(val environment: EnvironmentExtension) {
             add("run")
             spec.name?.let { add("--name=$it") }
             if (spec.detached) add("-d")
-            addAll(spec.volumes.map { (localPath, containerPath) -> "-v=${runtime.get().determinePath(localPath)}:$containerPath" })
+            addAll(spec.volumes.map { (localPath, containerPath) -> "-v=${runtime.determinePath(localPath)}:$containerPath" })
             addAll(spec.ports.map { (hostPort, containerPort) -> "-p=$hostPort:$containerPort" })
             addAll(spec.options.apply { if (spec.cleanup) add("--rm") }.toSet())
             add(spec.image)
