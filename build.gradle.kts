@@ -12,7 +12,7 @@ plugins {
     id("com.github.breadmoirai.github-release") version "2.2.10"
 }
 
-defaultTasks("clean", "publishToMavenLocal")
+defaultTasks("publishToMavenLocal")
 description = "Gradle Environment Plugin"
 group = "com.cognifide.gradle"
 
