@@ -51,7 +51,7 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
         register<EnvironmentResolve>(EnvironmentResolve.NAME)
 
         // Runtime lifecycle
-        
+
         named<Up>(Up.NAME) {
             dependsOn(EnvironmentUp.NAME)
         }
@@ -81,5 +81,4 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
     companion object {
         const val ID = "com.cognifide.environment"
     }
-
 }

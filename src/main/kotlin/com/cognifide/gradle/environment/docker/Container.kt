@@ -1,7 +1,6 @@
 package com.cognifide.gradle.environment.docker
 
 import com.cognifide.gradle.common.build.Behaviors
-import com.cognifide.gradle.common.utils.Formats
 import com.cognifide.gradle.environment.docker.container.ContainerException
 import com.cognifide.gradle.environment.docker.container.DevOptions
 import com.cognifide.gradle.environment.docker.container.HostFileManager

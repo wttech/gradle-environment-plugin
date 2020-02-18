@@ -1,6 +1,5 @@
 package com.cognifide.gradle.environment.docker.runtime
 
-import com.cognifide.gradle.environment.EnvironmentException
 import com.cognifide.gradle.environment.EnvironmentExtension
 import com.cognifide.gradle.environment.docker.Runtime
 

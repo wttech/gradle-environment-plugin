@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     id("java-gradle-plugin")
@@ -58,7 +59,7 @@ tasks {
         from(sourceSets["main"].allSource)
     }
 
-    register<org.jetbrains.dokka.gradle.DokkaTask>("dokkaJavadoc") {
+    register<DokkaTask>("dokkaJavadoc") {
         outputFormat = "html"
         outputDirectory = "$buildDir/javadoc"
     }
