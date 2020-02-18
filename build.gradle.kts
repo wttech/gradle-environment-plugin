@@ -33,6 +33,8 @@ dependencies {
     implementation("commons-io:commons-io:2.6")
     implementation("org.apache.httpcomponents:httpclient:4.5.10") // TODO probably not needed
 
+    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
