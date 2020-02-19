@@ -48,8 +48,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     val running: Boolean get() = docker.running
 
-    val up: Boolean
-        get() = docker.up
+    val up: Boolean get() = docker.up
 
     fun resolve() {
         docker.containers.resolve()
@@ -130,7 +129,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
     }
 
     override fun toString(): String {
-        return "Environment(root=$rootDir, up=$up)"
+        return "Environment(root=${rootDir.get()}, up=$up)"
     }
 
     companion object {

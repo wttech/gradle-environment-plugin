@@ -39,7 +39,7 @@ class Docker(val environment: EnvironmentExtension) {
      * On Windows there could be installed Docker distribution named  'Desktop' or 'Toolbox'.
      */
     val runtimeType = common.obj.typed<Runtime> {
-        convention(common.obj.provider { Runtime.detect(environment) })
+        convention(common.obj.provider { Runtime.determine(environment) })
     }
 
     fun runtimeType(name: String) {
