@@ -23,9 +23,9 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
     }
 
     private fun Project.setupTasks() = tasks {
-        register(EnvironmentDown.NAME, EnvironmentDown::class.java)
+        register<EnvironmentDown>(EnvironmentDown.NAME)
 
-        register(EnvironmentUp.NAME, EnvironmentUp::class.java) {
+        register<EnvironmentUp>(EnvironmentUp.NAME) {
             mustRunAfter(EnvironmentResolve.NAME, EnvironmentDown.NAME, EnvironmentDestroy.NAME)
         }
         register<EnvironmentRestart>(EnvironmentRestart.NAME) {

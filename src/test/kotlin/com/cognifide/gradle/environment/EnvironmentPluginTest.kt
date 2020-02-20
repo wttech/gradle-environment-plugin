@@ -8,7 +8,7 @@ import kotlin.test.Test
 class EnvironmentPluginTest {
 
     @Test
-    fun `plugin registers extension and tasks`() = using(ProjectBuilder.builder().build()) {
+    fun `plugin registers extension and tasks`() = ProjectBuilder.builder().build().using {
         plugins.apply(EnvironmentPlugin.ID)
 
         extensions.getByName(EnvironmentExtension.NAME)
