@@ -102,7 +102,7 @@ tasks {
     }
 
     named("githubRelease") {
-        dependsOn("release")
+        mustRunAfter("release")
     }
 
     register("fullRelease") {
