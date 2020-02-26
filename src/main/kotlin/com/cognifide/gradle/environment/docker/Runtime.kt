@@ -22,13 +22,13 @@ interface Runtime {
     companion object {
 
         fun determine(env: EnvironmentExtension): Runtime {
-            return env.prop.string("environment.docker.type")?.let { of(env, it) } ?: detect(env) ?: Desktop(env)
+            return env.prop.string("environment.docker.runtime")?.let { of(env, it) } ?: detect(env) ?: Desktop(env)
         }
 
         fun of(env: EnvironmentExtension, name: String): Runtime? = when (name.toLowerCase()) {
             Toolbox.NAME -> Toolbox(env)
             Desktop.NAME -> Desktop(env)
-            else -> throw DockerException("Unsupported Docker type '$name'")
+            else -> throw DockerException("Unsupported Docker runtime '$name'")
         }
 
         fun detect(env: EnvironmentExtension): Runtime? {

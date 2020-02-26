@@ -7,14 +7,11 @@ import org.gradle.internal.os.OperatingSystem
 
 class Desktop(environment: EnvironmentExtension) : Base(environment) {
 
-    override val name: String
-        get() = NAME
+    override val name: String get() = NAME
 
-    override val hostIp: String
-        get() = environment.prop.string("environment.docker.desktop.hostIp") ?: "127.0.0.1"
+    override val hostIp: String get() = environment.prop.string("environment.docker.desktop.hostIp") ?: "127.0.0.1"
 
-    override val safeVolumes: Boolean
-        get() = !OperatingSystem.current().isWindows
+    override val safeVolumes: Boolean get() = !OperatingSystem.current().isWindows
 
     override fun determinePath(path: String) = Formats.normalizePath(path)
 

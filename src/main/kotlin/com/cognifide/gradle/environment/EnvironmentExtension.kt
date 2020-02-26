@@ -1,6 +1,7 @@
 package com.cognifide.gradle.environment
 
 import com.cognifide.gradle.common.CommonExtension
+import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.docker.Docker
 import com.cognifide.gradle.environment.health.HealthChecker
 import com.cognifide.gradle.environment.health.HealthStatus
@@ -34,15 +35,26 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         prop.file("environment.sourceDir")?.let { set(it) }
     }
 
-    val docker = Docker(this)
+    /**
+     * Configures Docker related options.
+     */
+    fun docker(options: Docker.() -> Unit) = docker.using(options)
 
-    fun docker(options: Docker.() -> Unit) {
-        docker.apply(options)
-    }
+    val docker by lazy { Docker(this) }
 
-    var healthChecker = HealthChecker(this)
+    /**
+     * Configures environment service health checks.
+     */
+    fun healthChecks(options: HealthChecker.() -> Unit) = healthChecker.using(options)
 
-    val hosts = HostOptions(this)
+    val healthChecker by lazy { HealthChecker(this) }
+
+    /**
+     * Defines hosts to be appended to system specific hosts file.
+     */
+    fun hosts(options: HostOptions.() -> Unit) = hosts.using(options)
+
+    val hosts by lazy { HostOptions(this) }
 
     val created: Boolean get() = rootDir.get().asFile.exists()
 
@@ -61,10 +73,8 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         }
 
         logger.info("Turning on: $this")
-
         docker.init()
         docker.up()
-
         logger.info("Turned on: $this")
     }
 
@@ -86,9 +96,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     fun destroy() {
         logger.info("Destroying: $this")
-
         rootDir.get().asFile.deleteRecursively()
-
         logger.info("Destroyed: $this")
     }
 
@@ -108,29 +116,11 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         }
 
         logger.info("Reloading $this")
-
         docker.reload()
-
         logger.info("Reloaded $this")
     }
 
-    /**
-     * Defines hosts to be appended to system specific hosts file.
-     */
-    fun hosts(options: HostOptions.() -> Unit) {
-        hosts.apply(options)
-    }
-
-    /**
-     * Configures environment service health checks.
-     */
-    fun healthChecks(options: HealthChecker.() -> Unit) {
-        healthChecker.apply(options)
-    }
-
-    override fun toString(): String {
-        return "Environment(root=${rootDir.get()}, up=$up)"
-    }
+    override fun toString(): String = "Environment(root=${rootDir.get()}, up=$up)"
 
     companion object {
         const val NAME = "environment"

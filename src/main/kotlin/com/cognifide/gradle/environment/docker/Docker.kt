@@ -1,5 +1,6 @@
 package com.cognifide.gradle.environment.docker
 
+import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.EnvironmentExtension
 import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
@@ -20,31 +21,23 @@ class Docker(val environment: EnvironmentExtension) {
     /**
      * Represents Docker stack named 'aem' and provides API for manipulating it.
      */
-    val stack = Stack(environment)
+    val stack by lazy { Stack(environment) }
 
     /**
      * Provides API for manipulating Docker containers defined in 'docker-compose.yml'.
      */
-    val containers = ContainerManager(this)
+    val containers by lazy { ContainerManager(this) }
 
     /**
      * Configure additional behavior for Docker containers defined in 'docker-compose.yml'.
      */
-    fun containers(options: ContainerManager.() -> Unit) {
-        containers.apply(options)
-    }
+    fun containers(options: ContainerManager.() -> Unit) = containers.using(options)
 
     /**
      * Represents Docker runtime specific options.
      * On Windows there could be installed Docker distribution named  'Desktop' or 'Toolbox'.
      */
-    val runtimeType = common.obj.typed<Runtime> {
-        convention(common.obj.provider { Runtime.determine(environment) })
-    }
-
-    fun runtimeType(name: String) {
-        runtimeType.set(Runtime.of(environment, name))
-    }
+    val runtime by lazy { Runtime.determine(environment) }
 
     val composeFile = common.obj.relativeFile(environment.rootDir, "docker-compose.yml")
 
@@ -52,11 +45,9 @@ class Docker(val environment: EnvironmentExtension) {
 
     // Shorthands useful to be used in template: 'docker-compose.yml.peb'
 
-    val runtime get() = runtimeType.get()
+    val configPath get() = runtime.determinePath(environment.sourceDir.get().asFile)
 
-    val configPath: String get() = runtime.determinePath(environment.sourceDir.get().asFile)
-
-    val rootPath: String get() = runtime.determinePath(environment.rootDir.get().asFile)
+    val rootPath get() = runtime.determinePath(environment.rootDir.get().asFile)
 
     fun init() {
         syncComposeFile()

@@ -6,11 +6,9 @@ import org.buildobjects.process.ProcBuilder
 
 class Toolbox(environment: EnvironmentExtension) : Base(environment) {
 
-    override val name: String
-        get() = NAME
+    override val name: String get() = NAME
 
-    override val hostIp: String
-        get() = detectHostIp() ?: environment.prop.string("environment.docker.toolbox.hostIp") ?: "192.168.99.100"
+    override val hostIp: String get() = detectHostIp() ?: environment.prop.string("environment.docker.toolbox.hostIp") ?: "192.168.99.100"
 
     @Suppress("TooGenericExceptionCaught")
     fun detectHostIp(): String? = try {
