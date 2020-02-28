@@ -36,8 +36,8 @@ open class Reloader(val environment: EnvironmentExtension) {
     private fun CoroutineScope.watchContainerFileChanges() {
         watchedContainers.map { container ->
             FileWatcher(common).apply {
-                dirs = container.devOptions.watchDirs.files.toList()
-                onChange = { event ->
+                dirs.from(container.devOptions.watchDirs)
+                onChange { event ->
                     GlobalScope.launch {
                         fileChanges.send(ContainerFileEvent(container, event))
                     }

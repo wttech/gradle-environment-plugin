@@ -16,8 +16,14 @@ class HealthChecker(val environment: EnvironmentExtension) {
     private val checks = mutableListOf<HealthCheck>()
 
     private var httpOptions: HttpClient.() -> Unit = {
-        connectionRetries = prop.boolean("environment.health.http.connectionRetries") ?: false
-        connectionTimeout = prop.int("environment.health.http.connectionTimeout") ?: 1000
+        connectionRetries.apply {
+            convention(false)
+            prop.boolean("environment.health.http.connectionRetries")?.let { set(it) }
+        }
+        connectionTimeout.apply {
+            convention(1000)
+            prop.int("environment.health.http.connectionTimeout")?.let { set(it) }
+        }
     }
 
     var retry = common.retry { afterSquaredSecond(prop.long("environment.health.retry") ?: 3) }
