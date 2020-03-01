@@ -4,6 +4,7 @@ import com.cognifide.gradle.common.http.HttpClient
 import com.cognifide.gradle.common.utils.Formats
 import com.cognifide.gradle.environment.EnvironmentExtension
 import com.cognifide.gradle.environment.EnvironmentException
+import org.apache.http.HttpStatus
 
 class HealthChecker(val environment: EnvironmentExtension) {
 
@@ -28,9 +29,11 @@ class HealthChecker(val environment: EnvironmentExtension) {
 
     var retry = common.retry { afterSquaredSecond(prop.long("environment.health.retry") ?: 3) }
 
-    fun define(name: String, check: () -> Unit) {
+    fun check(name: String, check: () -> Unit) {
         checks += HealthCheck(name, check)
     }
+
+    fun String.invoke(check: () -> Unit) = check(this, check)
 
     // Evaluation
 
@@ -86,22 +89,22 @@ class HealthChecker(val environment: EnvironmentExtension) {
 
     // Shorthand methods for defining health checks
 
-    fun String.invoke(url: String, criteria: HttpCheck.() -> Unit) = http(this, url, criteria)
-
     /**
      * Check URL using specified criteria (HTTP options and e.g text & status code assertions).
      */
-    fun http(checkName: String, url: String, criteria: HttpCheck.() -> Unit) {
-        define(checkName) {
-            common.http {
-                val check = HttpCheck(url).apply(criteria)
+    fun http(checkName: String, url: String, containedText: String, statusCode: Int = HttpStatus.SC_OK) {
+        http(checkName, url) { containsText(containedText, statusCode) }
+    }
 
-                apply(httpOptions)
-                apply(check.options)
+    fun http(checkName: String, url: String, criteria: HttpCheck.() -> Unit) = check(checkName) {
+        common.http {
+            val check = HttpCheck(url).apply(criteria)
 
-                request(check.method, check.url) { response ->
-                    check.checks.forEach { it(response) }
-                }
+            apply(httpOptions)
+            apply(check.options)
+
+            request(check.method, check.url) { response ->
+                check.checks.forEach { it(response) }
             }
         }
     }
