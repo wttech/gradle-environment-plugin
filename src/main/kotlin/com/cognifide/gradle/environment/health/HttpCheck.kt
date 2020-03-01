@@ -4,7 +4,7 @@ import com.cognifide.gradle.common.http.HttpClient
 import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
 
-class UrlCheck(val url: String) {
+class HttpCheck(val url: String) {
 
     var method = "GET"
 

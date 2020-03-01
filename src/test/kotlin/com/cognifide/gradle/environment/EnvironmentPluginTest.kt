@@ -23,5 +23,4 @@ class EnvironmentPluginTest {
         tasks.getByName(EnvironmentRestart.NAME)
         tasks.getByName(EnvironmentUp.NAME)
     }
-
 }

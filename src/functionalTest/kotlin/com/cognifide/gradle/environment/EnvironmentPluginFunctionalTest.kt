@@ -26,7 +26,7 @@ class EnvironmentPluginFunctionalTest {
         runner.withPluginClasspath()
         runner.withArguments("environmentHosts")
         runner.withProjectDir(projectDir)
-        val result = runner.build();
+        val result = runner.build()
 
         // Verify the result
         assertEquals(TaskOutcome.SUCCESS, result.task(":environmentHosts")?.outcome)

@@ -86,13 +86,15 @@ class HealthChecker(val environment: EnvironmentExtension) {
 
     // Shorthand methods for defining health checks
 
+    fun String.invoke(url: String, criteria: HttpCheck.() -> Unit) = http(this, url, criteria)
+
     /**
      * Check URL using specified criteria (HTTP options and e.g text & status code assertions).
      */
-    fun url(checkName: String, url: String, criteria: UrlCheck.() -> Unit) {
+    fun http(checkName: String, url: String, criteria: HttpCheck.() -> Unit) {
         define(checkName) {
             common.http {
-                val check = UrlCheck(url).apply(criteria)
+                val check = HttpCheck(url).apply(criteria)
 
                 apply(httpOptions)
                 apply(check.options)
