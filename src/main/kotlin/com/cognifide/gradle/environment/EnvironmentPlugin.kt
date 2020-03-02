@@ -50,7 +50,6 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
         }
         register<EnvironmentHosts>(EnvironmentHosts.NAME)
 
-
         // Runtime lifecycle
 
         named<Up>(Up.NAME) {
