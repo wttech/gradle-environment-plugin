@@ -47,7 +47,9 @@ class Docker(val environment: EnvironmentExtension) {
 
     val configPath get() = runtime.determinePath(environment.sourceDir.get().asFile)
 
-    val rootPath get() = runtime.determinePath(environment.rootDir.get().asFile)
+    val workPath get() = runtime.determinePath(environment.rootDir.get().asFile)
+
+    val rootPath get() = runtime.determinePath(environment.project.rootProject.projectDir)
 
     fun init() {
         syncComposeFile()

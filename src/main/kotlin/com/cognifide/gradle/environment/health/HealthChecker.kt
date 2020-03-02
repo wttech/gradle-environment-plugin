@@ -50,7 +50,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
                     reset()
 
                     step = when {
-                        no > 1 -> "Health rechecking (attempt $no/${retry.times}, ${failed.size} ${if (failed.size == 1) "check" else "checks"} failed)"
+                        no > 1 -> "Health rechecking (attempt ${no - 1}/${retry.times}, ${failed.size} ${if (failed.size == 1) "check" else "checks"} failed)"
                         else -> "Health checking"
                     }
 
@@ -74,7 +74,8 @@ class HealthChecker(val environment: EnvironmentExtension) {
                     logger.info(message)
                 }
             } catch (e: EnvironmentException) {
-                val message = "Environment health check(s) failed. Success ratio: $count:\n${all.joinToString("\n")}"
+                val message = "Environment health check(s) failed. Success ratio: $count:\n" +
+                        all.sortedWith(compareBy({ it.passed }, { it.check.name })).joinToString("\n")
                 if (!verbose) {
                     logger.error(message)
                 } else {
