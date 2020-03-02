@@ -6,9 +6,9 @@ class HealthStatus(val check: HealthCheck, val cause: Exception? = null) {
 
     val status: String
         get() = when (cause) {
-            null -> "OK"
-            else -> "FAIL | ${cause.message}"
+            null -> "[+] $check"
+            else -> "[-] $check | ${cause.message}"
         }
 
-    override fun toString() = "$check | $status".trim()
+    override fun toString() = status.trim()
 }
