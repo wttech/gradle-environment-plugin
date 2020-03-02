@@ -7,7 +7,7 @@ class HealthCheck(val name: String, val action: () -> Any?) {
         var cause: Exception? = null
         try {
             action()
-    } catch (e: Exception) {
+        } catch (e: Exception) {
             cause = e
         }
 
