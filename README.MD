@@ -71,12 +71,10 @@ Illustrative example:
 
 ```kotlin
 environment { // config for AEM environment running on Docker
-    rootDir = prop.string("environment.rootDir")?.let { project.file(it) } ?: projectMain.file(".environment")
+    rootDir.set(prop.string("environment.rootDir")) // project.file(".environment")
     hosts { // domains to be appended to hosts file automatically
-        author("http://author.example.com")
-        publish("http://demo.example.com") { tag("test") }
-        publish("http://example.com") { tag("live") }
-        other("http://dispatcher.example.com")
+        "http://example.com" { tag("publish") }
+        "http://locahost:4502 { tag("author") }
     }
     docker { // Docker specific configuration
         containers {
@@ -104,11 +102,10 @@ environment { // config for AEM environment running on Docker
         }                        
     }
     healthChecks { // checks (e.g GET requests) verifying running Docker containers like HTTPD
-          url("Live site", "http://example.com/en-us.html") { containsText("English US") }
-          url("Demo site", "http://demo.example.com/en-us.html") { containsText("English US") }
-          url("Author module 'Sites'", "http://author.example.com/sites.html") {
-              options { basicCredentials = authorInstance.credentials }
+          http("http://example.com/en-us.html", "Live site", "English US")
+          http("http://author.example.com/sites.html", "Author module 'Sites'") {
               containsText("Sites")
+              options { basicCredentials = authorInstance.credentials }
           }
     }
 }
@@ -122,8 +119,7 @@ For example, to wait for all domains to be available and having particular text 
 ```kotlin
 environment {
     healthChecks {
-        url("Live site", "http://example.com/en-us.html", text = "English")
-        url("Demo site", "http://demo.example.com/en-us.html", text = "English")
+        http("http://example.com/en-us.html", "Live site", "English US")
     }
 }
 ```
