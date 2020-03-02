@@ -49,10 +49,9 @@ class HealthChecker(val environment: EnvironmentExtension) {
                 retry.withSleep<Unit, EnvironmentException> { no ->
                     reset()
 
-                    step = if (no > 1) {
-                        "Health rechecking (${failed.size} failed)"
-                    } else {
-                        "Health checking"
+                    step = when {
+                        no > 1 -> "Health rechecking (attempt $no/${retry.times}, ${failed.size} ${if (failed.size == 1) "check" else "checks"} failed)"
+                        else -> "Health checking"
                     }
 
                     all = common.parallel.map(checks) { check ->
@@ -75,7 +74,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
                     logger.info(message)
                 }
             } catch (e: EnvironmentException) {
-                val message = "Environment health check(s) failed: $count:\n${all.joinToString("\n")}"
+                val message = "Environment health check(s) failed. Success ratio: $count:\n${all.joinToString("\n")}"
                 if (!verbose) {
                     logger.error(message)
                 } else {
