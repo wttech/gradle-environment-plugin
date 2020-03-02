@@ -23,58 +23,59 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
     }
 
     private fun Project.setupTasks() = tasks {
-        register<EnvironmentDown>(EnvironmentDown.NAME)
+        val resolve = register<EnvironmentResolve>(EnvironmentResolve.NAME)
 
-        register<EnvironmentUp>(EnvironmentUp.NAME) {
-            mustRunAfter(EnvironmentResolve.NAME, EnvironmentDown.NAME, EnvironmentDestroy.NAME)
+        val down = register<EnvironmentDown>(EnvironmentDown.NAME)
+        val destroy = register<EnvironmentDestroy>(EnvironmentDestroy.NAME) {
+            dependsOn(down)
         }
-        register<EnvironmentRestart>(EnvironmentRestart.NAME) {
-            dependsOn(EnvironmentDown.NAME, EnvironmentUp.NAME)
+        val up = register<EnvironmentUp>(EnvironmentUp.NAME) {
+            mustRunAfter(resolve, down, destroy)
         }
-        register<EnvironmentDestroy>(EnvironmentDestroy.NAME) {
-            dependsOn(EnvironmentDown.NAME)
+        val restart = register<EnvironmentRestart>(EnvironmentRestart.NAME) {
+            dependsOn(down, up)
         }
-        register<EnvironmentResetup>(EnvironmentResetup.NAME) {
-            dependsOn(EnvironmentDestroy.NAME, EnvironmentUp.NAME)
+        val resetup = register<EnvironmentResetup>(EnvironmentResetup.NAME) {
+            dependsOn(destroy, up)
         }
 
         register<EnvironmentDev>(EnvironmentDev.NAME) {
-            mustRunAfter(EnvironmentUp.NAME)
+            mustRunAfter(up)
         }
-        register<EnvironmentAwait>(EnvironmentAwait.NAME) {
-            mustRunAfter(EnvironmentUp.NAME)
+        val await = register<EnvironmentAwait>(EnvironmentAwait.NAME) {
+            mustRunAfter(up)
         }
         register<EnvironmentReload>(EnvironmentReload.NAME) {
-            mustRunAfter(EnvironmentUp.NAME)
+            mustRunAfter(up)
         }
         register<EnvironmentHosts>(EnvironmentHosts.NAME)
-        register<EnvironmentResolve>(EnvironmentResolve.NAME)
+
 
         // Runtime lifecycle
 
         named<Up>(Up.NAME) {
-            dependsOn(EnvironmentUp.NAME)
+            dependsOn(up)
         }
         named<Down>(Down.NAME) {
-            dependsOn(EnvironmentDown.NAME)
+            dependsOn(down)
         }
         named<Destroy>(Destroy.NAME) {
-            dependsOn(EnvironmentDestroy.NAME)
+            dependsOn(destroy)
         }
         named<Restart>(Restart.NAME) {
-            dependsOn(EnvironmentRestart.NAME)
+            dependsOn(restart)
         }
         named<Setup>(Setup.NAME) {
-            dependsOn(EnvironmentUp.NAME)
+            dependsOn(up)
         }
         named<Resetup>(Resetup.NAME) {
-            dependsOn(EnvironmentResetup.NAME)
+            dependsOn(resetup)
         }
         named<Resolve>(Resolve.NAME) {
-            dependsOn(EnvironmentResolve.NAME)
+            dependsOn(resolve)
         }
         named<Await>(Await.NAME) {
-            dependsOn(EnvironmentAwait.NAME)
+            dependsOn(await)
         }
     }
 
