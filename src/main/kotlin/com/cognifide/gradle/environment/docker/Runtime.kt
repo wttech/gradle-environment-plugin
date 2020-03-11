@@ -13,7 +13,7 @@ interface Runtime {
 
     val safeVolumes: Boolean
 
-    val hostInternalIp: String?
+    val hostInternalIp: String
 
     fun determinePath(path: String): String
 
