@@ -8,7 +8,11 @@ class Toolbox(environment: EnvironmentExtension) : Base(environment) {
 
     override val name: String get() = NAME
 
-    override val hostIp: String get() = detectHostIp() ?: environment.prop.string("environment.docker.toolbox.hostIp") ?: "192.168.99.100"
+    override val hostIp: String get() = environment.prop.string("environment.docker.toolbox.hostIp")
+            ?: detectHostIp() ?: "192.168.99.100"
+
+    override val hostInternalIp: String get() = environment.prop.string("environment.docker.toolbox.hostInternalIp")
+            ?: detectHostInternalIp() ?: "10.0.2.2"
 
     @Suppress("TooGenericExceptionCaught")
     fun detectHostIp(): String? = try {
@@ -20,9 +24,6 @@ class Toolbox(environment: EnvironmentExtension) : Base(environment) {
     }
 
     override val safeVolumes: Boolean = true
-
-    override val hostInternalIp: String?
-        get() = environment.prop.string("environment.docker.toolbox.hostInternalIp") ?: "10.0.2.2"
 
     var cygpathPath = environment.prop.string("environment.cygpath.path")
             ?: "C:\\Program Files\\Git\\usr\\bin\\cygpath.exe"
