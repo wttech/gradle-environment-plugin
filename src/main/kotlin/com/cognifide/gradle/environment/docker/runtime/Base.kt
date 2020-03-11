@@ -3,12 +3,11 @@ package com.cognifide.gradle.environment.docker.runtime
 import com.cognifide.gradle.environment.EnvironmentExtension
 import com.cognifide.gradle.environment.docker.DockerProcess
 import com.cognifide.gradle.environment.docker.Runtime
+import org.gradle.internal.os.OperatingSystem
 
 abstract class Base(protected val environment: EnvironmentExtension) : Runtime {
 
     protected val logger = environment.project.logger
-
-    override fun toString(): String = name.toLowerCase()
 
     @Suppress("SpreadOperator", "TooGenericExceptionCaught")
     protected fun detectHostInternalIp(): String? = try {
@@ -20,4 +19,8 @@ abstract class Base(protected val environment: EnvironmentExtension) : Runtime {
         logger.debug("Cannot detect Docker host internal IP. Cause: ${e.message}", e)
         null
     }
+
+    override val hostInternalIpMissing: Boolean get() = !(OperatingSystem.current().isWindows || OperatingSystem.current().isMacOsX)
+
+    override fun toString(): String = name.toLowerCase()
 }

@@ -15,6 +15,8 @@ interface Runtime {
 
     val hostInternalIp: String
 
+    val hostInternalIpMissing: Boolean
+
     fun determinePath(path: String): String
 
     fun determinePath(file: File) = determinePath(file.toString())
