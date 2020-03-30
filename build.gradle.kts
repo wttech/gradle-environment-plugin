@@ -4,7 +4,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 plugins {
     id("java-gradle-plugin")
     id("maven-publish")
-    id("org.jetbrains.kotlin.jvm") version "1.3.70"
+    id("org.jetbrains.kotlin.jvm") version "1.3.71"
     id("org.jetbrains.dokka") version "0.10.1"
     id("com.gradle.plugin-publish") version "0.11.0"
     id("io.gitlab.arturbosch.detekt") version "1.6.0"
@@ -26,7 +26,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    implementation("com.cognifide.gradle:common-plugin:0.1.29")
+    implementation("com.cognifide.gradle:common-plugin:0.1.35")
     implementation("org.buildobjects:jproc:2.2.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
     implementation("org.apache.commons:commons-lang3:3.9")
