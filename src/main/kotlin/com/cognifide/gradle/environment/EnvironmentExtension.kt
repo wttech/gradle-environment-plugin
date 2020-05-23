@@ -23,7 +23,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
      * Path in which local AEM environment will be stored.
      */
     val rootDir = obj.dir {
-        convention(obj.projectDir(".environment"))
+        convention(obj.projectDir(".gradle/environment"))
         prop.file("environment.rootDir")?.let { set(it) }
     }
 
