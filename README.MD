@@ -12,6 +12,8 @@
      * [Notice for Docker on Windows](#notice-for-docker-on-windows)
      * [Notice for Docker Toolbox](#notice-for-docker-toolbox)
   * [Configuration](#configuration)
+     * [Docker compose file](#docker-compose-file)
+     * [DSL options](#dsl-options)
   * [Health checks](#health-checks)
   * [Task environmentUp](#task-environmentup)
   * [Task environmentDown](#task-environmentdown)
