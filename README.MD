@@ -210,7 +210,7 @@ Reloads virtualized environment by reloading all Docker containers (e.g. removin
 
 ## Task `environmentHosts`
 
-Appends environment specific hosts entries to OS specific hosts file.
+Prints hosts entries to be appended to OS-specific file.
 
 Example configuration:
 
