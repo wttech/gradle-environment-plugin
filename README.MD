@@ -111,10 +111,10 @@ Example above comes from [that file](https://github.com/Cognifide/gradle-aem-mul
 
 Moreover, plugin comes with rich DSL which allows to:
 
-* run callbacks on each container lifecycle event (resolve, up, reload, dev)
-* configure when container resources are stored
-* configure health checks to be able to detect moment in build lifecycle when are container services are stable and be ready to perform next build tasks using these services
-* configure hosts which should be apended to OS-specific hosts file
+* run callbacks on each container lifecycle event (resolve, up, reload, dev),
+* configure where container resources are stored,
+* configure health checks to be able to detect moment in build lifecycle when are container services are stable and be ready to perform next build tasks using these services,
+* configure hosts which should be apended to OS-specific hosts file.
 
 ```kotlin
 environment { // config for AEM environment running on Docker
