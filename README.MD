@@ -103,7 +103,7 @@ networks:
   docker-net:
 ```
 
-Docker has differences in case of how it works on different operating systems. While using templating and (variables)[src/main/kotlin/com/cognifide/gradle/environment/docker/Docker.kt#L46] in that file, Gradle Environment Plugin tries to mitigate these differences, to make your build working smoothly on all OSes and hide glitches from unexperienced Docker users. For example, when using Docker Toolbox, paths should be absolute and having Unix separators despite that host OS is Windows.
+Docker has differences in case of how it works on different operating systems. While using templating and [variables](src/main/kotlin/com/cognifide/gradle/environment/docker/Docker.kt#L46) in that file, Gradle Environment Plugin tries to mitigate these differences, to make your build working smoothly on all OSes and hide glitches from unexperienced Docker users. For example, when using Docker Toolbox, paths should be absolute and having Unix separators despite that host OS is Windows.
 
 Example above comes from [that file](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/src/environment/docker-compose.yml.peb) which is setting up Apache HTTPD for [Adobe Experience Manager](https://www.adobe.com/pl/marketing/experience-manager.html).
 
