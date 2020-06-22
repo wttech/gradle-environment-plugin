@@ -226,6 +226,11 @@ environment {
 
 Result of running task `environmentHosts` will be an list of IP-domain pairs should should be appended to OS-specific file (e.g /etc/hosts on Unix). When using Docker Toolbox on Windows, IP may be different, as of it is using extra VM to run Docker and IP of that VM should be used instead of loopback IP (localhost / 127.0.0.1). Plugin is trying to make this difference transparent for build users.
 
+Consider creating scripts which will run this task and amend output to OS-specific hosts file. See examples for:
+
+* [Windows](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts.bat),
+* [Unix](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts).
+
 ## License
 
 **Gradle Environment Plugin** is licensed under the [Apache License, Version 2.0 (the "License")](https://www.apache.org/licenses/LICENSE-2.0.txt)
