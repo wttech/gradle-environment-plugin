@@ -217,7 +217,7 @@ environment {
     hosts { // domains to be appended to hosts file automatically
         "http://example.com" { tag("live site") }
         "http://locahost:4502 { tag("cms authoring") }
-        "http://locahost:8080 { tag("dbms") }
+        "http://locahost:8080" { tag("dbms") }
     }
 }
 ```
