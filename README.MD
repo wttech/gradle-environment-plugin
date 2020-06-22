@@ -224,9 +224,9 @@ environment {
 }
 ```
 
-Result of running task `environmentHosts` will be an list of IP-domain pairs should should be appended to OS-specific file (e.g /etc/hosts on Unix). When using Docker Toolbox on Windows, IP may be different, as of it is using extra VM to run Docker and IP of that VM should be used instead of loopback IP (localhost / 127.0.0.1). Plugin is trying to make this difference transparent for build users.
+Result of running task `environmentHosts` will be an list of IP-domain pairs which should be appended to OS-specific file (e.g /etc/hosts on Unix). When using Docker Toolbox on Windows, IP may be different, as of it is using extra VM to run Docker and IP of that VM should be used instead of loopback IP (localhost / 127.0.0.1). Plugin is trying to make this difference transparent for build users.
 
-Consider creating scripts which will run this task and amend output to OS-specific hosts file. See examples for:
+Consider creating scripts which will run this task and amend output to OS-specific hosts file automatically with requesting admin/sudo permissions. See examples for:
 
 * [Windows](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts.bat),
 * [Unix](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts).
