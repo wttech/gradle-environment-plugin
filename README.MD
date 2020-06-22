@@ -25,8 +25,8 @@
 
 Provides seamless Gradle integration with Docker & Swarm.
 
-Controls virtualized environment consisting of Apache Web Server (HTTPD).
-Web Server is deployed as [Docker Container](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
+Controls virtualized environment consisting of any Docker-compatible software (e.g Apache Web Server (HTTPD), SQL/noSQL databases).
+Such software is deployed as [Docker Containers](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
 
 Provides environment related tasks: `environmentUp`, `environmentDev`, `environmentHosts` etc.
 
