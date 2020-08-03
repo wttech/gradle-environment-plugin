@@ -1,6 +1,7 @@
 package com.cognifide.gradle.environment
 
 import com.cognifide.gradle.common.CommonExtension
+import com.cognifide.gradle.common.build.Retry
 import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.docker.Docker
 import com.cognifide.gradle.environment.health.HealthChecker
@@ -100,14 +101,17 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         logger.info("Destroyed: $this")
     }
 
-    fun check(verbose: Boolean = true): List<HealthStatus> {
+    fun check(verbose: Boolean = true, retry: Retry? = null): List<HealthStatus> {
         if (!up) {
             throw EnvironmentException("Cannot check environment as it is not up!")
         }
 
         logger.info("Checking $this")
 
-        return healthChecker.check(verbose)
+        return when {
+            retry != null -> healthChecker.check(verbose, retry)
+            else -> healthChecker.check(verbose)
+        }
     }
 
     fun reload() {

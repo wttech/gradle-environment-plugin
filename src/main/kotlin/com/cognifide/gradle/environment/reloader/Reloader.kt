@@ -8,7 +8,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import java.util.*
 
-@UseExperimental(ObsoleteCoroutinesApi::class)
+@OptIn(ObsoleteCoroutinesApi::class)
 open class Reloader(val environment: EnvironmentExtension) {
 
     private val common = environment.common
@@ -24,6 +24,8 @@ open class Reloader(val environment: EnvironmentExtension) {
     private val healthCheckRequests = Channel<Any>(Channel.UNLIMITED)
 
     val configured get() = watchedContainers.isNotEmpty()
+
+    val retry = common.retry { afterSquaredSecond(common.prop.long("environment.reloader.retry") ?: 3) }
 
     fun start() {
         runBlocking {
@@ -76,7 +78,7 @@ open class Reloader(val environment: EnvironmentExtension) {
     private fun CoroutineScope.checkHealthAfterReload() = launch {
         while (true) {
             healthCheckRequests.receiveAvailable()
-            environment.check(false)
+            environment.check(false, retry)
         }
     }
 

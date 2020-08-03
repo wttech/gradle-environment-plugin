@@ -1,5 +1,6 @@
 package com.cognifide.gradle.environment.health
 
+import com.cognifide.gradle.common.build.Retry
 import com.cognifide.gradle.common.http.HttpClient
 import com.cognifide.gradle.common.utils.Formats
 import com.cognifide.gradle.environment.EnvironmentExtension
@@ -27,7 +28,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
         }
     }
 
-    var retry = common.retry { afterSquaredSecond(prop.long("environment.health.retry") ?: 6) }
+    var retry = common.retry { afterSquaredSecond(prop.long("environment.health.retry") ?: 7) }
 
     fun check(name: String, check: () -> Unit) {
         checks += HealthCheck(name, check)
@@ -38,7 +39,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
     // Evaluation
 
     @Suppress("ComplexMethod")
-    fun check(verbose: Boolean = true): List<HealthStatus> {
+    fun check(verbose: Boolean = true, retry: Retry = this.retry): List<HealthStatus> {
         var all = listOf<HealthStatus>()
         var passed = listOf<HealthStatus>()
         var failed = listOf<HealthStatus>()
