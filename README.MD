@@ -12,6 +12,8 @@
      * [Notice for Docker on Windows](#notice-for-docker-on-windows)
      * [Notice for Docker Toolbox](#notice-for-docker-toolbox)
   * [Configuration](#configuration)
+     * [Docker compose file](#docker-compose-file)
+     * [DSL options](#dsl-options)
   * [Health checks](#health-checks)
   * [Task environmentUp](#task-environmentup)
   * [Task environmentDown](#task-environmentdown)
@@ -23,10 +25,10 @@
 
 ## About
 
-Provides seamless Gradle integration with Docker & Swarm.
+Provides seamless Gradle integration with Docker & Swarm. Hides many OS-specific glitches from unexperienced Docker users.
 
-Controls virtualized environment consisting of Apache Web Server (HTTPD).
-Web Server is deployed as [Docker Container](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
+Controls virtualized environment consisting of any Docker-compatible software (e.g Apache Web Server (HTTPD), SQL/noSQL databases).
+Such software is deployed as [Docker Containers](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
 
 Provides environment related tasks: `environmentUp`, `environmentDev`, `environmentHosts` etc.
 
@@ -67,7 +69,52 @@ As a consequence, if project is located outside of *C:/Users* directory, there i
 
 ## Configuration
 
-Illustrative example:
+### Docker compose file
+
+To configure containers to be deployed using Docker Swarm, simply create standard Docker Compose file but with templating (file at path *src/environment/docker-compose.yml.peb*)
+
+```yml
+version: "3"
+services:
+  httpd:
+    image: centos/httpd:latest
+    command: ["tail", "-f", "--retry", "/usr/local/apache2/logs/error.log"]
+    deploy:
+      replicas: 1
+    ports:
+      - "80:80"
+    networks:
+      - docker-net
+    volumes:
+      - "{{ docker.rootPath }}/env/src/environment/httpd/conf/httpd.conf:/etc/httpd/conf/httpd.conf"
+      - "{{ docker.rootPath }}/app/aem/dispatcher/src/conf.d:/etc/httpd/conf.d"
+      - "{{ docker.rootPath }}/app/aem/dispatcher/src/conf.dispatcher.d:/etc/httpd/conf.dispatcher.d"
+      - "{{ docker.workPath }}/httpd/modules/mod_dispatcher.so:/etc/httpd/modules/mod_dispatcher.so"
+      - "{{ docker.workPath }}/httpd/logs:/etc/httpd/logs"
+      {% if docker.runtime.safeVolumes %}
+      - "{{ docker.workPath }}/httpd/cache:/var/www/localhost/cache"
+      - "{{ docker.workPath }}/httpd/htdocs:/var/www/localhost/htdocs"
+      {% endif %}
+    {% if docker.runtime.hostInternalIpMissing %}
+    extra_hosts:
+      - "host.docker.internal:{{ docker.runtime.hostInternalIp }}"
+    {% endif %}
+networks:
+  docker-net:
+```
+
+Docker has differences in case of how it works on different operating systems. While using templating and [variables](src/main/kotlin/com/cognifide/gradle/environment/docker/Docker.kt#L46) in that file, Gradle Environment Plugin tries to mitigate these differences, to make your build working smoothly on all OSes and hide glitches from unexperienced Docker users. For example, when using Docker Toolbox, paths should be absolute and having Unix separators despite that host OS is Windows.
+
+Example above comes from [that file](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/src/environment/docker-compose.yml.peb) which is setting up Apache HTTPD for [Adobe Experience Manager](https://www.adobe.com/pl/marketing/experience-manager.html).
+
+### DSL options
+
+Moreover, plugin comes with rich DSL which allows to:
+
+* run callbacks on each container lifecycle event (resolve, up, reload, dev),
+* configure where container resources are stored,
+* configure health checks to be able to detect moment in build lifecycle when are container services are stable and be ready to perform next build tasks using these services,
+* configure hosts which should be apended to OS-specific hosts file.
 
 ```kotlin
 environment { // config for AEM environment running on Docker
@@ -163,7 +210,26 @@ Reloads virtualized environment by reloading all Docker containers (e.g. removin
 
 ## Task `environmentHosts`
 
-Appends environment specific hosts entries to OS specific hosts file.
+Prints hosts entries to be appended to OS-specific file.
+
+Example configuration:
+
+```kotlin
+environment {
+    hosts { // domains to be appended to hosts file automatically
+        "http://example.com" { tag("live site") }
+        "http://locahost:4502" { tag("cms authoring") }
+        "http://locahost:8080" { tag("dbms") }
+    }
+}
+```
+
+Result of running task `environmentHosts` will be an list of IP-domain pairs which should be appended to OS-specific file (e.g /etc/hosts on Unix). When using Docker Toolbox on Windows, IP may be different, as of it is using extra VM to run Docker and IP of that VM should be used instead of loopback IP (localhost / 127.0.0.1). Plugin is trying to make this difference transparent for build users.
+
+Consider creating scripts which will run this task and amend output to OS-specific hosts file automatically with requesting admin/sudo permissions. See examples for:
+
+* [Windows](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts.bat),
+* [Unix](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts).
 
 ## License
 
