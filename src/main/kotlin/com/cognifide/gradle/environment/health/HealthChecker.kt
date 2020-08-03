@@ -27,7 +27,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
         }
     }
 
-    var retry = common.retry { afterSquaredSecond(prop.long("environment.health.retry") ?: 3) }
+    var retry = common.retry { afterSquaredSecond(prop.long("environment.health.retry") ?: 6) }
 
     fun check(name: String, check: () -> Unit) {
         checks += HealthCheck(name, check)
