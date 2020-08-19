@@ -37,6 +37,16 @@ class HostFileManager(val container: Container) {
         return files
     }
 
+    fun ensureFile(vararg paths: String, content: String = "") = paths.forEach { path ->
+        ensureDir(path.substringBeforeLast("/"))
+        file(path).apply {
+            if (!exists()) {
+                logger.info("Ensuring file '$this' for container '${container.name}'")
+                writeText(content)
+            }
+        }
+    }
+
     fun ensureDir() {
         rootDir.get().asFile.apply {
             logger.info("Ensuring root directory '$this' for container '${container.name}'")
@@ -44,10 +54,12 @@ class HostFileManager(val container: Container) {
         }
     }
 
-    fun ensureDir(vararg paths: String) = paths.forEach { path ->
-        file(path).apply {
-            logger.info("Ensuring directory '$this' for container '${container.name}'")
-            mkdirs()
+    fun ensureDir(vararg paths: String) {
+        paths.forEach { path ->
+            file(path).apply {
+                logger.info("Ensuring directory '$this' for container '${container.name}'")
+                mkdirs()
+            }
         }
     }
 

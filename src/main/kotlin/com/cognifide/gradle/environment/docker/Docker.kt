@@ -43,6 +43,8 @@ class Docker(val environment: EnvironmentExtension) {
 
     val composeTemplateFile = common.obj.relativeFile(environment.sourceDir, "docker-compose.yml.peb")
 
+    val composeProperties = common.obj.map<String, Any?> { convention(mapOf()) }
+
     // Shorthands useful to be used in template: 'docker-compose.yml.peb'
 
     val configPath get() = runtime.determinePath(environment.sourceDir.get().asFile)
@@ -68,7 +70,10 @@ class Docker(val environment: EnvironmentExtension) {
 
         targetFile.takeIf { it.exists() }?.delete()
         templateFile.copyTo(targetFile)
-        common.prop.expand(targetFile, mapOf("docker" to this))
+        common.prop.expand(targetFile, composeProperties.get() + mapOf(
+                "docker" to this,
+                "project" to common.project
+        ))
     }
 
     fun up() {

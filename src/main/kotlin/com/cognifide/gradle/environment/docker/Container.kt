@@ -182,12 +182,36 @@ class Container(val docker: Docker, val name: String) {
         this.exitCodes = exitCode?.run { listOf(this) } ?: listOf()
     }
 
-    fun ensureDir(vararg paths: String) = paths.forEach { path ->
-        execShell("Ensuring directory at path '$path'", "mkdir -p $path")
+    fun ensureFile(vararg paths: String) = ensureFile(paths.asIterable())
+
+    fun ensureFile(paths: Iterable<String>) {
+        ensureDir(paths.map { it.substringBeforeLast("/") })
+
+        val command = "touch ${paths.joinToString(" ")}"
+        when (paths.count()) {
+            1 -> execShell("Ensuring file '${paths.first()}'", command)
+            else -> execShell("Ensuring files (${paths.count()})", command)
+        }
     }
 
-    fun cleanDir(vararg paths: String) = paths.forEach { path ->
-        execShell("Cleaning directory contents at path '$path'", "rm -fr $path/*")
+    fun ensureDir(vararg paths: String) = ensureDir(paths.toList())
+
+    fun ensureDir(paths: Iterable<String>) {
+        val command = "mkdir -p ${paths.joinToString(" ")}"
+        when (paths.count()) {
+            1 -> execShell("Ensuring directory '${paths.first()}'", command)
+            else -> execShell("Ensuring directories (${paths.count()})", command)
+        }
+    }
+
+    fun cleanDir(vararg paths: String) = cleanDir(paths.asIterable())
+
+    fun cleanDir(paths: Iterable<String>) {
+        val command = "rm -fr ${paths.joinToString(" ") { "$it/*" }}"
+        when (paths.count()) {
+            1 -> execShell("Cleaning contents of directory at path '${paths.first()}'", command)
+            else -> execShell("Cleaning contents of directories (${paths.count()})", command)
+        }
     }
 
     private fun exec(spec: ExecSpec): DockerResult {

@@ -29,4 +29,6 @@ class Host(val url: String) {
     }
 
     fun tag(vararg ids: String) = tag(ids.asIterable())
+
+    override fun toString(): String = "Host(url='$url', ip='$ip', tags=$tags)"
 }

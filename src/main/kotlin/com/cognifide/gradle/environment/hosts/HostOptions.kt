@@ -35,6 +35,8 @@ class HostOptions(environment: EnvironmentExtension) : Serializable {
 
     operator fun String.invoke(options: Host.() -> Unit = {}) = define(this, options)
 
+    operator fun String.invoke(vararg tags: String) = define(this) { tag(tags.asIterable()) }
+
     fun define(url: String, options: Host.() -> Unit = {}) {
         defined.add(common.obj.provider { Host(url).apply { ip = ipDefault.get(); options() } })
     }

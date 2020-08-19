@@ -6,6 +6,11 @@ class ContainerManager(private val docker: Docker) {
 
     val defined = mutableListOf<Container>()
 
+    val dependent = common.obj.boolean {
+        convention(true)
+        common.prop.boolean("environment.docker.container.dependent")?.let { set(it) }
+    }
+
     /**
      * Define container.
      */
@@ -51,14 +56,22 @@ class ContainerManager(private val docker: Docker) {
     fun up() {
         common.progress {
             message = "Configuring container(s): ${defined.names}"
-            common.parallel.each(defined) { it.up() }
+            if (dependent.get()) {
+                defined.forEach { it.up() }
+            } else {
+                common.parallel.each(defined) { it.up() }
+            }
         }
     }
 
     fun reload() {
         common.progress {
             message = "Reloading container(s): ${defined.names}"
-            common.parallel.each(defined) { it.reload() }
+            if (dependent.get()) {
+                defined.forEach { it.reload() }
+            } else {
+                common.parallel.each(defined) { it.reload() }
+            }
         }
     }
 }
