@@ -95,7 +95,7 @@ class Container(val docker: Docker, val name: String) {
 
     private val lockRequired = mutableSetOf<String>()
 
-    var awaitRetry = common.retry { afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 30) }
+    var awaitRetry = common.retry { afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 60) }
 
     fun await() {
         common.progressIndicator {
