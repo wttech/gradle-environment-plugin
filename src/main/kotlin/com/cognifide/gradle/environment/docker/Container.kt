@@ -189,6 +189,7 @@ class Container(val docker: Docker, val name: String) {
 
         val command = "touch ${paths.joinToString(" ")}"
         when (paths.count()) {
+            0 -> logger.info("No files to ensure on container '$name'")
             1 -> execShell("Ensuring file '${paths.first()}'", command)
             else -> execShell("Ensuring files (${paths.count()})", command)
         }
@@ -199,6 +200,7 @@ class Container(val docker: Docker, val name: String) {
     fun ensureDir(paths: Iterable<String>) {
         val command = "mkdir -p ${paths.joinToString(" ")}"
         when (paths.count()) {
+            0 -> logger.info("No directories to ensure on container '$name'")
             1 -> execShell("Ensuring directory '${paths.first()}'", command)
             else -> execShell("Ensuring directories (${paths.count()})", command)
         }
