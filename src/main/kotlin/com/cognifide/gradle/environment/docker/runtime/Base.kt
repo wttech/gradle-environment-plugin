@@ -20,7 +20,10 @@ abstract class Base(protected val environment: EnvironmentExtension) : Runtime {
         null
     }
 
-    override val hostInternalIpMissing: Boolean get() = !(OperatingSystem.current().isWindows || OperatingSystem.current().isMacOsX)
+    override val hostInternalIpMissing: Boolean get() {
+        val os = OperatingSystem.current()
+        return this is Toolbox || !(os.isWindows || os.isMacOsX)
+    }
 
     override fun toString(): String = name.toLowerCase()
 }

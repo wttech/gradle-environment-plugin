@@ -185,7 +185,7 @@ class Container(val docker: Docker, val name: String) {
     fun ensureFile(vararg paths: String) = ensureFile(paths.asIterable())
 
     fun ensureFile(paths: Iterable<String>) {
-        ensureDir(paths.map { it.substringBeforeLast("/") })
+        ensureDir(paths.map { it.substringBeforeLast("/") }.toSet())
 
         val command = "touch ${paths.joinToString(" ")}"
         when (paths.count()) {
