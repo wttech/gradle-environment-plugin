@@ -46,6 +46,8 @@ open class EnvironmentExtension(val project: Project) : Serializable {
     /**
      * Configures environment service health checks.
      */
+    fun checks(options: HealthChecker.() -> Unit) = healthChecks(options)
+
     fun healthChecks(options: HealthChecker.() -> Unit) = healthChecker.using(options)
 
     val healthChecker by lazy { HealthChecker(this) }

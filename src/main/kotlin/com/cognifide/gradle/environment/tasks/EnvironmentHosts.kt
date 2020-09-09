@@ -7,7 +7,7 @@ open class EnvironmentHosts : EnvironmentDefaultTask() {
 
     @TaskAction
     fun appendHosts() {
-        logger.lifecycle("Hosts entries to be appended to ${environment.hosts.osFile}:")
+        logger.lifecycle("Hosts entries to be appended to ${environment.hosts.osFile.get()}:")
         logger.quiet(environment.hosts.appendix)
     }
 

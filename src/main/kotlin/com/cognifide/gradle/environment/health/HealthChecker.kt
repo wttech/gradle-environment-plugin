@@ -68,12 +68,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
                     }
                 }
 
-                val message = "Environment health check(s) succeed: $count"
-                if (!verbose) {
-                    logger.lifecycle(message)
-                } else {
-                    logger.info(message)
-                }
+                logger.lifecycle("Environment health check(s) succeed: $count")
             } catch (e: EnvironmentException) {
                 val message = "Environment health check(s) failed. Success ratio: $count:\n" +
                         all.sortedWith(compareBy({ it.passed }, { it.check.name })).joinToString("\n")
