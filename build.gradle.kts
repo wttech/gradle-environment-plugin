@@ -56,6 +56,11 @@ val check by tasks.getting(Task::class) {
 }
 
 tasks {
+    jar {
+        dependsOn(":hosts:jar")
+        from(provider { project(":hosts").tasks.getByName("jar") })
+    }
+
     register<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         dependsOn("classes")
