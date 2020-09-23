@@ -11,6 +11,11 @@ class HostUpdater(val environment: EnvironmentExtension) {
 
     private val common = environment.common
 
+    val interactive = common.obj.boolean {
+        convention(true)
+        common.prop.boolean("environment.hosts.updater.interactive")?.let { set(it) }
+    }
+
     val workDir = common.obj.dir {
         convention(environment.rootDir.dir("hosts"))
         common.prop.file("environment.hosts.updater.workDir")?.let { set(it) }
@@ -52,7 +57,7 @@ class HostUpdater(val environment: EnvironmentExtension) {
         }
         val sectionName = section.get()
 
-        if (os.isWindows) {
+        if (os.isWindows && interactive.get()) {
             val scriptFile = dir.resolve("hosts.bat")
             logger.info("Generating hosts updating script: $scriptFile")
 
@@ -65,7 +70,7 @@ class HostUpdater(val environment: EnvironmentExtension) {
             val scriptFile = dir.resolve("hosts.sh")
             logger.info("Generating hosts updating script: $scriptFile")
 
-            if (os.isMacOsX) {
+            if (os.isMacOsX && interactive.get()) {
                 scriptFile.writeText("""
                     #!/bin/sh
                     osascript -e "do shell script \"java -jar $updaterJar $sectionName $entriesFile $osFile\" with prompt \"Gradle Environment Hosts\" with administrator privileges" 

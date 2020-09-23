@@ -1,6 +1,6 @@
 import java.io.File
 
-fun main(args: Array<String>) {
+fun main(args: Array<String>) = try {
     val sourceName = args.getOrNull(0) ?: "mysite"
     val sourceFile = File(args.getOrNull(1) ?: ".gradle/environment/hosts.txt")
     val sourceSection = Section(sourceName, sourceFile.readText().lines().map { it.trim() })
@@ -10,11 +10,16 @@ fun main(args: Array<String>) {
     val sections = Section.parseAll(text)
 
     val targetSection = sections.find { it.name == sourceSection.name }
+
     if (targetSection != null) {
         targetFile.writeText(text.replace(targetSection.render(), sourceSection.render()))
     } else {
         targetFile.appendText("${System.lineSeparator()}${sourceSection.render()}")
     }
+} catch (e: Exception) {
+    println("Cannot update hosts file!")
+    println("Ensure using administrator/super-user privileges.")
+    println("Error details: ${e.message}")
 }
 
 data class Section(val name: String, val entries: List<String>) {
