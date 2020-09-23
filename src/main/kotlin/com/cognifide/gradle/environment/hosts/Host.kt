@@ -11,14 +11,7 @@ class Host(val url: String) {
 
     val config = URL(url)
 
-    init {
-        if (url.isBlank()) {
-            throw EnvironmentException("Host URL cannot be blank!")
-        }
-    }
-
-    val text: String
-        get() = "$ip\t${config.host}"
+    val text: String get() = "$ip\t${config.host}"
 
     fun tag(id: String) {
         tags.add(id)
@@ -29,6 +22,12 @@ class Host(val url: String) {
     }
 
     fun tag(vararg ids: String) = tag(ids.asIterable())
+
+    init {
+        if (url.isBlank()) {
+            throw EnvironmentException("Host URL cannot be blank!")
+        }
+    }
 
     override fun toString(): String = "Host(url='$url', ip='$ip', tags=$tags)"
 }

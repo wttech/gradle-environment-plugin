@@ -26,7 +26,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    implementation("com.cognifide.gradle:common-plugin:0.1.64")
+    implementation("com.cognifide.gradle:common-plugin:0.1.63")
     implementation("org.buildobjects:jproc:2.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5")
     implementation("org.apache.commons:commons-lang3:3.9")
@@ -56,6 +56,11 @@ val check by tasks.getting(Task::class) {
 }
 
 tasks {
+    jar {
+        dependsOn(":hosts:jar")
+        from(provider { project(":hosts").tasks.getByName("jar") })
+    }
+
     register<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         dependsOn("classes")

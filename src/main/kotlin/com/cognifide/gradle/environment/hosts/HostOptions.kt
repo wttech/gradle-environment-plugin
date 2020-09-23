@@ -1,14 +1,14 @@
 package com.cognifide.gradle.environment.hosts
 
-import com.cognifide.gradle.environment.EnvironmentExtension
+import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.EnvironmentException
-import org.gradle.internal.os.OperatingSystem
+import com.cognifide.gradle.environment.EnvironmentExtension
 import java.io.Serializable
 
 /**
  * Manages host definitions in case of different purposes indicated by tags.
  */
-class HostOptions(environment: EnvironmentExtension) : Serializable {
+class HostOptions(private val environment: EnvironmentExtension) : Serializable {
 
     val docker = environment.docker
 
@@ -21,17 +21,6 @@ class HostOptions(environment: EnvironmentExtension) : Serializable {
     val ipDefault = common.obj.string {
         convention(common.obj.provider { docker.runtime.hostIp })
     }
-
-    val osFile = common.obj.string {
-        convention(common.obj.provider {
-            when {
-                OperatingSystem.current().isWindows -> """C:\Windows\System32\drivers\etc\hosts"""
-                else -> "/etc/hosts"
-            }
-        })
-    }
-
-    val appendix: String get() = defined.get().joinToString("\n") { it.text }
 
     operator fun String.invoke(options: Host.() -> Unit = {}) = define(this, options)
 
@@ -61,4 +50,10 @@ class HostOptions(environment: EnvironmentExtension) : Serializable {
     fun all(tags: Iterable<String>) = defined.get().filter { h -> tags.all { t -> h.tags.contains(t) } }.ifEmpty {
         throw EnvironmentException("Environment has no hosts tagged with '${tags.joinToString(",")}'!")
     }
+
+    val updater by lazy { HostUpdater(environment) }
+
+    fun updater(options: HostUpdater.() -> Unit) = updater.using(options)
+
+    fun update() = updater.update()
 }
