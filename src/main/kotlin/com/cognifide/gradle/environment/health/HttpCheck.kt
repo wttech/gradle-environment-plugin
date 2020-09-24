@@ -22,6 +22,14 @@ class HttpCheck(val url: String) {
 
     // Shorthand methods for checking responses
 
+    fun respondsWith(statusCode: Int) {
+        check { response ->
+            checkStatus(response, statusCode)
+        }
+    }
+
+    fun respondsOk() = respondsWith(HttpStatus.SC_OK)
+
     fun containsText(text: String, statusCode: Int = HttpStatus.SC_OK) {
         check { response ->
             checkStatus(response, statusCode)

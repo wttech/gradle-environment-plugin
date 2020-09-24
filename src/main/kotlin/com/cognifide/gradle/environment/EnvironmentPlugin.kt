@@ -24,13 +24,14 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
 
     private fun Project.setupTasks() = tasks {
         val resolve = register<EnvironmentResolve>(EnvironmentResolve.NAME)
+        val hosts = register<EnvironmentHosts>(EnvironmentHosts.NAME)
 
         val down = register<EnvironmentDown>(EnvironmentDown.NAME)
         val destroy = register<EnvironmentDestroy>(EnvironmentDestroy.NAME) {
             dependsOn(down)
         }
         val up = register<EnvironmentUp>(EnvironmentUp.NAME) {
-            mustRunAfter(resolve, down, destroy)
+            mustRunAfter(hosts, resolve, down, destroy)
         }
         val restart = register<EnvironmentRestart>(EnvironmentRestart.NAME) {
             dependsOn(down, up)
@@ -48,7 +49,6 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
         register<EnvironmentReload>(EnvironmentReload.NAME) {
             mustRunAfter(up)
         }
-        register<EnvironmentHosts>(EnvironmentHosts.NAME)
 
         // Runtime lifecycle
 

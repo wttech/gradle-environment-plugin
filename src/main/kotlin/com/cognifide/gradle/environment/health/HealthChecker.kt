@@ -88,6 +88,10 @@ class HealthChecker(val environment: EnvironmentExtension) {
     /**
      * Check URL using specified criteria (HTTP options and e.g text & status code assertions).
      */
+    fun http(checkName: String, url: String, statusCode: Int = HttpStatus.SC_OK) {
+        http(checkName, url) { respondsWith(statusCode) }
+    }
+
     fun http(checkName: String, url: String, containedText: String, statusCode: Int = HttpStatus.SC_OK) {
         http(checkName, url) { containsText(containedText, statusCode) }
     }
