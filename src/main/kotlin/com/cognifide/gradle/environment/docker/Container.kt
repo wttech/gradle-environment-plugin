@@ -3,8 +3,9 @@ package com.cognifide.gradle.environment.docker
 import com.cognifide.gradle.common.build.Behaviors
 import com.cognifide.gradle.environment.docker.container.ContainerException
 import com.cognifide.gradle.environment.docker.container.DevOptions
-import com.cognifide.gradle.environment.docker.container.HostFileManager
 import com.cognifide.gradle.environment.docker.container.ExecSpec
+import com.cognifide.gradle.environment.docker.container.HostFileManager
+import com.cognifide.gradle.environment.docker.exec.DirConfig
 import org.gradle.internal.os.OperatingSystem
 
 class Container(val docker: Docker, val name: String) {
@@ -95,7 +96,9 @@ class Container(val docker: Docker, val name: String) {
 
     private val lockRequired = mutableSetOf<String>()
 
-    var awaitRetry = common.retry { afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 60) }
+    var awaitRetry = common.retry {
+        afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 60)
+    }
 
     fun await() {
         common.progressIndicator {
@@ -185,7 +188,11 @@ class Container(val docker: Docker, val name: String) {
     fun ensureFile(vararg paths: String) = ensureFile(paths.asIterable())
 
     fun ensureFile(paths: Iterable<String>) {
-        ensureDir(paths.map { it.substringBeforeLast("/") }.toSet())
+        val dirPaths = paths.filter { it.contains("/") }
+                .map { it.substringBeforeLast("/") }
+                .filter { it.isNotBlank() }
+                .toSet()
+        ensureDir(dirPaths)
 
         val command = "touch ${paths.joinToString(" ")}"
         when (paths.count()) {
@@ -203,6 +210,21 @@ class Container(val docker: Docker, val name: String) {
             0 -> logger.info("No directories to ensure on container '$name'")
             1 -> execShell("Ensuring directory '${paths.first()}'", command)
             else -> execShell("Ensuring directories (${paths.count()})", command)
+        }
+    }
+
+    fun configureDir(vararg paths: String, config: DirConfig.() -> Unit) = configureDir(paths.asIterable(), config)
+
+    fun configureDir(paths: Iterable<String>, config: DirConfig.() -> Unit) {
+        val c = DirConfig().apply(config)
+        val command = mutableListOf<String>().apply {
+            if (c.owner.isNotBlank() && c.group.isNotBlank()) add("chown -R ${c.owner}:${c.group} ${paths.joinToString(" ")}")
+            if (c.mode.isNotBlank()) add("chmod ${c.mode} ${paths.joinToString(" ")}")
+        }.joinToString(" && ")
+        when (paths.count()) {
+            0 -> logger.info("No directories to configure on container '$name'")
+            1 -> execShell("Configuring directory '${paths.first()}'", command)
+            else -> execShell("Configuring directories (${paths.count()})", command)
         }
     }
 

@@ -38,7 +38,11 @@ class HostFileManager(val container: Container) {
     }
 
     fun ensureFile(vararg paths: String, content: String = "") = paths.forEach { path ->
-        ensureDir(path.substringBeforeLast("/"))
+        path.takeIf { it.contains("/") }
+                ?.substringBeforeLast("/")
+                ?.takeIf { it.isNotBlank() }
+                ?.let { ensureDir(it) }
+
         file(path).apply {
             if (!exists()) {
                 logger.info("Ensuring file '$this' for container '${container.name}'")
