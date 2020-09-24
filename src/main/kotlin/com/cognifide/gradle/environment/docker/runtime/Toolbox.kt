@@ -23,7 +23,7 @@ class Toolbox(environment: EnvironmentExtension) : Base(environment) {
         null
     }
 
-    override val safeVolumes: Boolean = true
+    override val safeVolumes: Boolean get() = environment.prop.boolean("environment.docker.toolbox.safeVolumes") ?: true
 
     var cygpathPath = environment.prop.string("environment.cygpath.path")
             ?: "C:\\Program Files\\Git\\usr\\bin\\cygpath.exe"
