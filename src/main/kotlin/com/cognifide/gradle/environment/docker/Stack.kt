@@ -14,7 +14,7 @@ class Stack(val environment: EnvironmentExtension) {
 
     val internalName = common.prop.string("environment.docker.stack.name") ?: common.project.rootProject.name
 
-    var initTimeout = common.prop.long("environment.docker.stack.initTimeout") ?: 10000L
+    var initTimeout = common.prop.long("environment.docker.stack.initTimeout") ?: 30_000L
 
     val initialized: Boolean by lazy {
         var error: Exception? = null
@@ -100,7 +100,7 @@ class Stack(val environment: EnvironmentExtension) {
         }
     }
 
-    var networkTimeout = common.prop.long("environment.docker.stack.networkTimeout") ?: 10000L
+    var networkTimeout = common.prop.long("environment.docker.stack.networkTimeout") ?: 30_000L
 
     val networkAvailable: Boolean
         get() {

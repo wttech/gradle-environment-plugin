@@ -53,7 +53,7 @@ class Container(val docker: Docker, val name: String) {
         devOptions.apply(options)
     }
 
-    var runningTimeout = common.prop.long("environment.docker.container.runningTimeout") ?: 10000L
+    var runningTimeout = common.prop.long("environment.docker.container.runningTimeout") ?: 30_000L
 
     val id: String?
         get() {

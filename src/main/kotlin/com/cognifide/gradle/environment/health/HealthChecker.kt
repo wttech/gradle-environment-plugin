@@ -23,7 +23,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
             prop.boolean("environment.health.http.connectionRetries")?.let { set(it) }
         }
         connectionTimeout.apply {
-            convention(1000)
+            convention(1_000)
             prop.int("environment.health.http.connectionTimeout")?.let { set(it) }
         }
     }
