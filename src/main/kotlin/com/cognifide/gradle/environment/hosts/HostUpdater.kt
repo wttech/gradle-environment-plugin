@@ -1,5 +1,6 @@
 package com.cognifide.gradle.environment.hosts
 
+import com.cognifide.gradle.environment.EnvironmentException
 import com.cognifide.gradle.environment.EnvironmentExtension
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.process.internal.ExecException
@@ -99,7 +100,7 @@ class HostUpdater(val environment: EnvironmentExtension) {
         if (execResult.exitValue == 0) {
             logger.lifecycle("Environment hosts successfully updated.")
         } else {
-            val errorText = String(errorOutput.toByteArray())
+            val errorText = errorOutput.toByteArray().toString()
             if (errorText.contains("Unable to access jarfile")) {
                 mutableListOf<String>().apply {
                     add("Failed to update environment hosts. Unable to access executable. Probably project source files are placed under")
@@ -108,12 +109,12 @@ class HostUpdater(val environment: EnvironmentExtension) {
                     add("Consider troubleshooting:")
                     add("* move project files outside of 'Documents', 'Desktop' or 'Downloads' directories to avoid problems")
                     add("* or set the host updater work directory to a path directly under your files home in your gradle.properties file as a workaround:")
-                    add("    * environment.hosts.updater.workDir=/Users/user.name/.gap/hosts")
+                    add("    * environment.hosts.updater.workDir=/Users/\$USER_NAME/.gap/hosts")
 
                     logger.error(joinToString("\n"))
                 }
             }
-            throw ExecException(errorText)
+            throw EnvironmentException(errorText)
         }
     }
 }
