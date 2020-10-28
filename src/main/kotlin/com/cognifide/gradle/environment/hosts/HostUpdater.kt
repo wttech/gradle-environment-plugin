@@ -2,6 +2,9 @@ package com.cognifide.gradle.environment.hosts
 
 import com.cognifide.gradle.environment.EnvironmentExtension
 import org.gradle.internal.os.OperatingSystem
+import org.gradle.process.internal.ExecException
+import java.io.ByteArrayOutputStream
+import java.io.File
 
 class HostUpdater(val environment: EnvironmentExtension) {
 
@@ -50,8 +53,8 @@ class HostUpdater(val environment: EnvironmentExtension) {
         val updaterJar = dir.resolve("hosts.jar").apply {
             logger.info("Providing hosts updater program: $this")
             outputStream().use { output ->
-                this@HostUpdater.javaClass.getResourceAsStream("/hosts.jar").use {
-                    input -> input.copyTo(output)
+                this@HostUpdater.javaClass.getResourceAsStream("/hosts.jar").use { input ->
+                    input.copyTo(output)
                 }
             }
         }
@@ -75,8 +78,7 @@ class HostUpdater(val environment: EnvironmentExtension) {
                     #!/bin/sh
                     osascript -e "do shell script \"java -jar $updaterJar $sectionName $entriesFile $osFile\" with prompt \"Gradle Environment Hosts\" with administrator privileges" 
                 """.trimIndent())
-                project.exec { it.commandLine("sh", scriptFile.toString()) }
-                logger.lifecycle("Environment hosts successfully updated.")
+                execOnMacAndValidateResult(scriptFile)
             } else {
                 scriptFile.writeText("""
                     #!/bin/sh
@@ -84,6 +86,33 @@ class HostUpdater(val environment: EnvironmentExtension) {
                 """.trimIndent())
                 logger.lifecycle("To update environment hosts, run script below as administrator/super-user:\n$scriptFile")
             }
+        }
+    }
+
+    private fun execOnMacAndValidateResult(scriptFile: File) {
+        val errorOutput = ByteArrayOutputStream()
+        val execResult = project.exec {
+            it.errorOutput = errorOutput
+            it.isIgnoreExitValue = true
+            it.commandLine("sh", scriptFile.toString())
+        }
+        if (execResult.exitValue == 0) {
+            logger.lifecycle("Environment hosts successfully updated.")
+        } else {
+            val errorText = String(errorOutput.toByteArray())
+            if (errorText.contains("execution error: Error: Unable to access jarfile")) {
+                logger.error(
+                        """
+                    Failed to update environment hosts. Unable to access executable. You may have placed your source files under 
+                    the 'Documents', 'Desktop' or 'Downloads' directory. This may cause errors related to accessing files in the future. 
+                    We recommend moving project files outside of those directories to avoid problems.
+                    Alternatively, you can set the host updater work directory to a path directly under your files home:
+                    environment.hosts.updater.workDir=/Users/user.name/.gap/hosts
+                    in your gradle.properties file as a workaround.
+                """.trimIndent()
+                )
+            }
+            throw ExecException(errorText)
         }
     }
 }
