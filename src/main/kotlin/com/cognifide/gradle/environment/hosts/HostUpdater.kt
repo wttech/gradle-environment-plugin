@@ -100,17 +100,18 @@ class HostUpdater(val environment: EnvironmentExtension) {
             logger.lifecycle("Environment hosts successfully updated.")
         } else {
             val errorText = String(errorOutput.toByteArray())
-            if (errorText.contains("execution error: Error: Unable to access jarfile")) {
-                logger.error(
-                        """
-                    Failed to update environment hosts. Unable to access executable. You may have placed your source files under 
-                    the 'Documents', 'Desktop' or 'Downloads' directory. This may cause errors related to accessing files in the future. 
-                    We recommend moving project files outside of those directories to avoid problems.
-                    Alternatively, you can set the host updater work directory to a path directly under your files home:
-                    environment.hosts.updater.workDir=/Users/user.name/.gap/hosts
-                    in your gradle.properties file as a workaround.
-                """.trimIndent()
-                )
+            if (errorText.contains("Unable to access jarfile")) {
+                mutableListOf<String>().apply {
+                    add("Failed to update environment hosts. Unable to access executable. Probably project source files are placed under")
+                    add("the 'Documents', 'Desktop' or 'Downloads' directory. This may cause errors related to accessing files in the future.")
+
+                    add("Consider troubleshooting:")
+                    add("* move project files outside of 'Documents', 'Desktop' or 'Downloads' directories to avoid problems")
+                    add("* or set the host updater work directory to a path directly under your files home in your gradle.properties file as a workaround:")
+                    add("    * environment.hosts.updater.workDir=/Users/user.name/.gap/hosts")
+
+                    logger.error(joinToString("\n"))
+                }
             }
             throw ExecException(errorText)
         }
