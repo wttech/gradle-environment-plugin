@@ -238,6 +238,22 @@ class Container(val docker: Docker, val name: String) {
         }
     }
 
+    fun symlink(sourcePath: String, targetPath: String) = symlink(mapOf(sourcePath to targetPath))
+
+    fun symlink(vararg sourceTargetPairs: Pair<String, String>) = symlink(sourceTargetPairs.toMap())
+
+    fun symlink(sourceTargetMap: Map<String, String>, force: Boolean = true) {
+        when (sourceTargetMap.size) {
+            0 -> logger.info("No paths to be symlinked on container '$name'")
+            else -> {
+                val command = sourceTargetMap.entries.joinToString(" && ") {
+                    "${if (force) "ln -f -s" else "ln -s"} ${it.key} ${it.value}"
+                }
+                execShell("Symlinking files (${sourceTargetMap.size})", command)
+            }
+        }
+    }
+
     private fun exec(spec: ExecSpec): DockerResult {
         if (spec.command.isBlank()) {
             throw ContainerException("Exec command cannot be blank!")
