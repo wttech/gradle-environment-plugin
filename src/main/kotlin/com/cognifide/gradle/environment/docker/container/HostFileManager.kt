@@ -10,28 +10,31 @@ import java.io.File
  */
 class HostFileManager(val container: Container) {
 
-    private val aem = container.common
+    private val common = container.common
 
-    private val logger = aem.logger
+    private val logger = common.logger
 
     private val docker = container.docker
 
-    val rootDir = aem.obj.relativeDir(docker.environment.rootDir, container.name)
-
-    val fileDir = aem.obj.dir {
-        convention(rootDir.dir("files"))
-        aem.prop.file("environment.container.host.fileDir")?.let { set(it) }
-    }
+    val rootDir = common.obj.relativeDir(docker.environment.rootDir, container.name)
 
     fun file(path: String) = rootDir.get().asFile.resolve(path)
 
-    val configDir = aem.obj.relativeDir(docker.environment.sourceDir, container.name)
+    val configDir = common.obj.relativeDir(docker.environment.sourceDir, container.name)
 
     fun configFile(path: String) = configDir.get().asFile.resolve(path)
 
+    private var fileResolverOptions: FileResolver.() -> Unit = {
+        downloadDir.convention(common.obj.buildDir("environment/host"))
+    }
+
+    fun fileResolver(options: FileResolver.() -> Unit) {
+        this.fileResolverOptions = options
+    }
+
     fun resolveFiles(options: FileResolver.() -> Unit): List<File> {
         logger.info("Resolving files for container '${container.name}'")
-        val files = aem.resolveFiles(options)
+        val files = common.resolveFiles { fileResolverOptions(); options() }
         logger.info("Resolved files for container '${container.name}':\n${files.joinToString("\n")}")
 
         return files

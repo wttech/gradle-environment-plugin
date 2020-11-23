@@ -6,7 +6,7 @@ import com.cognifide.gradle.environment.EnvironmentException
 import com.cognifide.gradle.environment.docker.runtime.Toolbox
 
 /**
- * Represents AEM project specific AEM Docker stack and provides API for manipulating it.
+ * Represents project specific Docker stack and provides API for manipulating it.
  */
 class Stack(val environment: EnvironmentExtension) {
 
