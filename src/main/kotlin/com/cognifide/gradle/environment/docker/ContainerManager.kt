@@ -51,30 +51,42 @@ class ContainerManager(private val docker: Docker) {
     val up: Boolean get() = defined.all { it.up }
 
     fun resolve() {
-        common.progress {
-            message = "Resolving container(s): ${defined.names}"
-            common.parallel.each(defined) { it.resolve() }
+        common.progress(defined.size) {
+            step = "Resolving container(s)"
+            common.parallel.each(defined) { container ->
+                increment(container.name) { container.resolve() }
+            }
         }
     }
 
     fun up() {
-        common.progress {
-            message = "Configuring container(s): ${defined.names}"
+        common.progress(defined.size) {
+            step = "Configuring container(s)"
+
             if (dependent.get()) {
-                defined.forEach { it.up() }
+                defined.forEach { container ->
+                    increment(container.name) { container.up() }
+                }
             } else {
-                common.parallel.each(defined) { it.up() }
+                common.parallel.each(defined) { container ->
+                    increment(container.name) { container.up() }
+                }
             }
         }
     }
 
     fun reload() {
-        common.progress {
-            message = "Reloading container(s): ${defined.names}"
+        common.progress(defined.size) {
+            step = "Reloading container(s)"
+
             if (dependent.get()) {
-                defined.forEach { it.reload() }
+                defined.forEach { container ->
+                    increment(container.name) { container.reload() }
+                }
             } else {
-                common.parallel.each(defined) { it.reload() }
+                common.parallel.each(defined) { container ->
+                    increment(container.name) { container.reload() }
+                }
             }
         }
     }
