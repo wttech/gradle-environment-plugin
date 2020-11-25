@@ -186,21 +186,25 @@ githubRelease {
     releaseName(project.version.toString())
     releaseAssets(tasks["jar"], tasks["sourcesJar"], tasks["javadocJar"])
     draft((project.findProperty("github.draft") ?: "false").toString().toBoolean())
-    prerelease((project.findProperty("github.prerelease") ?: "false").toString().toBoolean())
     overwrite((project.findProperty("github.override") ?: "true").toString().toBoolean())
 
-    body { """
-    |# What's new
-    |
-    |TBD
-    |
-    |# Upgrade notes
-    |
-    |Nothing to do.
-    |
-    |# Contributions
-    |
-    |None.
-    """.trimMargin()
+    val prerelease = (project.findProperty("github.prerelease") ?: "true").toString().toBoolean()
+    if (prerelease) {
+        prerelease(true)
+    } else {
+        body { """
+            |# What's new
+            |
+            |TBD
+            |
+            |# Upgrade notes
+            |
+            |Nothing to do.
+            |
+            |# Contributions
+            |
+            |None.
+            """.trimMargin()
+        }
     }
 }

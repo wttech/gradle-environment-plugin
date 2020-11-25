@@ -173,7 +173,7 @@ class Docker(val environment: EnvironmentExtension) {
                 }
             }
             if (name == null) {
-                name = "${stack.internalName}_$id"
+                name = "${stack.internalName.get()}_$id"
             }
         }
 

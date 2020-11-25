@@ -18,6 +18,10 @@ class ContainerManager(private val docker: Docker) {
         return Container(docker, name).apply { definition(); defined.add(this) }
     }
 
+    fun define(vararg names: String) = define(names.asIterable())
+
+    fun define(names: Iterable<String>) = names.forEach { define(it) {} }
+
     /**
      * Shorthand for defining container by string invocation.
      */

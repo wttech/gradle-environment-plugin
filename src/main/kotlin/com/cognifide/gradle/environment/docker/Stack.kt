@@ -12,9 +12,42 @@ class Stack(val environment: EnvironmentExtension) {
 
     private val common = environment.common
 
-    val internalName = common.prop.string("environment.docker.stack.name") ?: common.project.rootProject.name
+    val internalName = common.obj.string {
+        convention(common.project.rootProject.name)
+        common.prop.string("environment.docker.stack.name")?.let { set(it) }
+    }
 
-    var initTimeout = common.prop.long("environment.docker.stack.initTimeout") ?: 30_000L
+    val networkSuffix = common.obj.string {
+        convention("docker-net")
+        common.prop.string("environment.docker.networkSuffix")?.let { set(it) }
+    }
+
+    val networkName = common.obj.string {
+        convention(internalName.map { "${it}_${networkSuffix.get()}" })
+    }
+
+    val networkTimeout = common.obj.long {
+        convention(30_000L)
+        common.prop.long("environment.docker.stack.networkTimeout")?.let { set(it) }
+    }
+
+    val networkAvailable: Boolean
+        get() {
+            val result = DockerProcess.execQuietly {
+                withTimeoutMillis(networkTimeout.get())
+                withArgs("network", "inspect", networkName.get())
+            }
+            return when {
+                result.exitValue == 0 -> true
+                result.errorString.contains("Error: No such network") -> false
+                else -> throw StackException("Unable to determine Docker stack '${internalName.get()}' status. Error: '${result.errorString}'")
+            }
+        }
+
+    val initTimeout = common.obj.long {
+        convention(30_000L)
+        common.prop.long("environment.docker.stack.initTimeout")?.let { set(it) }
+    }
 
     val initialized: Boolean by lazy {
         var error: Exception? = null
@@ -38,7 +71,7 @@ class Stack(val environment: EnvironmentExtension) {
 
     private fun initSwarm() {
         val result = DockerProcess.execQuietly {
-            withTimeoutMillis(initTimeout)
+            withTimeoutMillis(initTimeout.get())
             withArgs("swarm", "init")
 
             if (environment.docker.runtime is Toolbox) {
@@ -54,20 +87,20 @@ class Stack(val environment: EnvironmentExtension) {
 
     fun deploy() {
         common.progressIndicator {
-            message = "Starting stack '$internalName'"
+            message = "Starting stack '${internalName.get()}'"
 
             try {
                 val composeFilePath = environment.docker.composeFile.get().asFile.path
-                DockerProcess.exec { withArgs("stack", "deploy", "-c", composeFilePath, internalName) }
+                DockerProcess.exec { withArgs("stack", "deploy", "-c", composeFilePath, internalName.get()) }
             } catch (e: DockerException) {
-                throw StackException("Failed to deploy Docker stack '$internalName'!", e)
+                throw StackException("Failed to deploy Docker stack '${internalName.get()}'!", e)
             }
 
-            message = "Awaiting started stack '$internalName'"
+            message = "Awaiting started stack '${internalName.get()}'"
             Behaviors.waitUntil(deployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == deployRetry.times && !running) {
-                    throw EnvironmentException("Failed to start stack named '$internalName'!")
+                    throw EnvironmentException("Failed to start stack named '${internalName.get()}'!")
                 }
 
                 !running
@@ -79,20 +112,20 @@ class Stack(val environment: EnvironmentExtension) {
 
     fun undeploy() {
         common.progressIndicator {
-            message = "Stopping stack '$internalName'"
+            message = "Stopping stack '${internalName.get()}'"
 
             try {
-                DockerProcess.exec { withArgs("stack", "rm", internalName) }
+                DockerProcess.exec { withArgs("stack", "rm", internalName.get()) }
             } catch (e: DockerException) {
-                throw StackException("Failed to remove Docker stack '$internalName'!", e)
+                throw StackException("Failed to remove Docker stack '${internalName.get()}'!", e)
             }
 
-            message = "Awaiting stopped stack '$internalName'"
+            message = "Awaiting stopped stack '${internalName.get()}'"
             Behaviors.waitUntil(undeployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == undeployRetry.times && running) {
-                    throw EnvironmentException("Failed to stop stack named '$internalName'!" +
-                            " Try to stop manually using Docker command: 'docker stack rm $internalName'")
+                    throw EnvironmentException("Failed to stop stack named '${internalName.get()}'!" +
+                            " Try to stop manually using Docker command: 'docker stack rm ${internalName.get()}'")
                 }
 
                 running
@@ -100,23 +133,7 @@ class Stack(val environment: EnvironmentExtension) {
         }
     }
 
-    var networkTimeout = common.prop.long("environment.docker.stack.networkTimeout") ?: 30_000L
-
-    val networkAvailable: Boolean
-        get() {
-            val result = DockerProcess.execQuietly {
-                withTimeoutMillis(networkTimeout)
-                withArgs("network", "inspect", "${internalName}_docker-net")
-            }
-            return when {
-                result.exitValue == 0 -> true
-                result.errorString.contains("Error: No such network") -> false
-                else -> throw StackException("Unable to determine Docker stack '$internalName' status. Error: '${result.errorString}'")
-            }
-        }
-
-    val running: Boolean
-        get() = initialized && networkAvailable
+    val running: Boolean get() = initialized && networkAvailable
 
     fun reset() {
         undeploy()

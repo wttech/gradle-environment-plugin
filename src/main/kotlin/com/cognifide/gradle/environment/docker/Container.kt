@@ -16,7 +16,7 @@ class Container(val docker: Docker, val name: String) {
 
     private val logger = common.logger
 
-    val internalName = "${docker.stack.internalName}_$name"
+    val internalName get() = "${docker.stack.internalName.get()}_$name"
 
     val host = HostFileManager(this)
 
@@ -91,8 +91,7 @@ class Container(val docker: Docker, val name: String) {
             }
         }
 
-    val up: Boolean
-        get() = running && isLocked(LOCK_UP)
+    val up: Boolean get() = running && isLocked(LOCK_UP)
 
     private val lockRequired = mutableSetOf<String>()
 
@@ -114,7 +113,7 @@ class Container(val docker: Docker, val name: String) {
                         }
 
                         add("Consider troubleshooting:")
-                        add("* using command: 'docker stack ps ${docker.stack.internalName} --no-trunc'")
+                        add("* using command: 'docker stack ps ${docker.stack.internalName.get()} --no-trunc'")
                         add("* restarting Docker")
 
                         throw ContainerException(joinToString("\n"))
