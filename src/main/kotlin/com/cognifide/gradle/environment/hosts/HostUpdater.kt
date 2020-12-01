@@ -1,26 +1,24 @@
 package com.cognifide.gradle.environment.hosts
 
+import com.cognifide.gradle.common.CommonExtension
 import com.cognifide.gradle.environment.EnvironmentException
-import com.cognifide.gradle.environment.EnvironmentExtension
 import org.gradle.internal.os.OperatingSystem
 import java.io.ByteArrayOutputStream
 
-class HostUpdater(val environment: EnvironmentExtension) {
+class HostUpdater(val common: CommonExtension) {
 
-    private val project = environment.project
+    private val project = common.project
 
     private val logger = project.logger
 
-    private val common = environment.common
-
     val interactive = common.obj.boolean {
         convention(true)
-        common.prop.boolean("environment.hosts.updater.interactive")?.let { set(it) }
+        common.prop.boolean("hosts.updater.interactive")?.let { set(it) }
     }
 
     val workDir = common.obj.dir {
-        convention(environment.rootDir.dir("hosts"))
-        common.prop.file("environment.hosts.updater.workDir")?.let { set(it) }
+        convention(project.layout.buildDirectory.dir("hosts"))
+        common.prop.file("hosts.updater.workDir")?.let { set(it) }
     }
 
     val targetFile = common.obj.file {
@@ -30,16 +28,16 @@ class HostUpdater(val environment: EnvironmentExtension) {
                 else -> "/etc/hosts"
             })
         })
-        common.prop.file("environment.hosts.updater.targetFile")?.let { set(it) }
+        common.prop.file("hosts.updater.targetFile")?.let { set(it) }
     }
 
     val section = common.obj.string {
-        convention(environment.docker.stack.internalName)
-        common.prop.string("environment.hosts.updater.section")?.let { set(it) }
+        convention(project.rootProject.name)
+        common.prop.string("hosts.updater.section")?.let { set(it) }
     }
 
     @Suppress("MaxLineLength")
-    fun update() {
+    fun update(hosts: Iterable<Host>) {
         val os = OperatingSystem.current()
         val osFile = targetFile.get()
 
@@ -47,7 +45,7 @@ class HostUpdater(val environment: EnvironmentExtension) {
 
         val entriesFile = dir.resolve("hosts.txt").apply {
             logger.info("Generating hosts entries file: $this")
-            writeText(environment.hosts.defined.get().joinToString(System.lineSeparator()) { it.text })
+            writeText(hosts.joinToString(System.lineSeparator()) { it.text })
         }
         val updaterJar = dir.resolve("hosts.jar").apply {
             logger.info("Providing hosts updater program: $this")
@@ -103,15 +101,15 @@ class HostUpdater(val environment: EnvironmentExtension) {
                 logger.error(joinToString("\n"))
             }
         }
-        throw EnvironmentException(errorText)
+        throw HostException(errorText)
     }
 
     private fun execAndHandleErrors(commandLine: List<String>, errorHandler: (String) -> Unit = { throw EnvironmentException(it) }) {
         val errorOutput = ByteArrayOutputStream()
-        val execResult = project.exec {
-            it.errorOutput = errorOutput
-            it.isIgnoreExitValue = true
-            it.commandLine(commandLine)
+        val execResult = project.exec { spec ->
+            spec.errorOutput = errorOutput
+            spec.isIgnoreExitValue = true
+            spec.commandLine(commandLine)
         }
         if (execResult.exitValue == 0) {
             logger.lifecycle("Environment hosts successfully updated.")

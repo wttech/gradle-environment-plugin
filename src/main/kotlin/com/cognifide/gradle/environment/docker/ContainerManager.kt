@@ -8,7 +8,7 @@ class ContainerManager(private val docker: Docker) {
 
     val dependent = common.obj.boolean {
         convention(true)
-        common.prop.boolean("environment.docker.container.dependent")?.let { set(it) }
+        common.prop.boolean("docker.container.dependent")?.let { set(it) }
     }
 
     /**

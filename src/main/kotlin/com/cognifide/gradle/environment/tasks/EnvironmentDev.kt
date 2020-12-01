@@ -1,7 +1,7 @@
 package com.cognifide.gradle.environment.tasks
 
 import com.cognifide.gradle.environment.EnvironmentDefaultTask
-import com.cognifide.gradle.environment.reloader.Reloader
+import com.cognifide.gradle.environment.docker.reloader.Reloader
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 

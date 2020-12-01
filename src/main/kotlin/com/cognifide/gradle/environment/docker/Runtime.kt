@@ -23,9 +23,8 @@ interface Runtime {
 
     companion object {
 
-        fun determine(env: EnvironmentExtension): Runtime {
-            return env.prop.string("environment.docker.runtime")?.let { of(env, it) } ?: detect(env) ?: Desktop(env)
-        }
+        fun determine(env: EnvironmentExtension) = env.prop.string("docker.runtime")
+                ?.let { of(env, it) } ?: detect(env) ?: Desktop(env)
 
         fun of(env: EnvironmentExtension, name: String): Runtime? = when (name.toLowerCase()) {
             Toolbox.NAME -> Toolbox(env)

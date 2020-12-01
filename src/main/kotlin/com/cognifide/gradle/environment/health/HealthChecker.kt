@@ -20,15 +20,15 @@ class HealthChecker(val environment: EnvironmentExtension) {
     private var httpOptions: HttpClient.() -> Unit = {
         connectionRetries.apply {
             convention(false)
-            prop.boolean("environment.health.http.connectionRetries")?.let { set(it) }
+            prop.boolean("healthChecker.http.connectionRetries")?.let { set(it) }
         }
         connectionTimeout.apply {
             convention(1_000)
-            prop.int("environment.health.http.connectionTimeout")?.let { set(it) }
+            prop.int("healthChecker.http.connectionTimeout")?.let { set(it) }
         }
     }
 
-    var retry = common.retry { afterSquaredSecond(prop.long("environment.health.retry") ?: 7) }
+    var retry = common.retry { afterSquaredSecond(prop.long("healthChecker.retry") ?: 7) }
 
     fun check(name: String, check: () -> Unit) {
         checks += HealthCheck(name, check)

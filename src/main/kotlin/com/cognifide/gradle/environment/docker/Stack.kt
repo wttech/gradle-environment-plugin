@@ -14,12 +14,12 @@ class Stack(val environment: EnvironmentExtension) {
 
     val internalName = common.obj.string {
         convention(common.project.rootProject.name)
-        common.prop.string("environment.docker.stack.name")?.let { set(it) }
+        common.prop.string("docker.stack.name")?.let { set(it) }
     }
 
     val networkSuffix = common.obj.string {
         convention("docker-net")
-        common.prop.string("environment.docker.networkSuffix")?.let { set(it) }
+        common.prop.string("docker.networkSuffix")?.let { set(it) }
     }
 
     val networkName = common.obj.string {
@@ -28,7 +28,7 @@ class Stack(val environment: EnvironmentExtension) {
 
     val networkTimeout = common.obj.long {
         convention(30_000L)
-        common.prop.long("environment.docker.stack.networkTimeout")?.let { set(it) }
+        common.prop.long("docker.stack.networkTimeout")?.let { set(it) }
     }
 
     val networkAvailable: Boolean
@@ -46,7 +46,7 @@ class Stack(val environment: EnvironmentExtension) {
 
     val initTimeout = common.obj.long {
         convention(30_000L)
-        common.prop.long("environment.docker.stack.initTimeout")?.let { set(it) }
+        common.prop.long("docker.stack.initTimeout")?.let { set(it) }
     }
 
     val initialized: Boolean by lazy {
@@ -83,7 +83,7 @@ class Stack(val environment: EnvironmentExtension) {
         }
     }
 
-    var deployRetry = common.retry { afterSecond(this@Stack.common.prop.long("environment.docker.stack.deployRetry") ?: 30) }
+    var deployRetry = common.retry { afterSecond(this@Stack.common.prop.long("docker.stack.deployRetry") ?: 30) }
 
     fun deploy() {
         common.progressIndicator {
@@ -108,7 +108,7 @@ class Stack(val environment: EnvironmentExtension) {
         }
     }
 
-    var undeployRetry = common.retry { afterSecond(this@Stack.common.prop.long("environment.docker.stack.undeployRetry") ?: 30) }
+    var undeployRetry = common.retry { afterSecond(this@Stack.common.prop.long("docker.stack.undeployRetry") ?: 30) }
 
     fun undeploy() {
         common.progressIndicator {

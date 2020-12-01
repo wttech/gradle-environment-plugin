@@ -1,4 +1,4 @@
-package com.cognifide.gradle.environment.reloader
+package com.cognifide.gradle.environment.docker.reloader
 
 import com.cognifide.gradle.common.file.FileWatcher
 import com.cognifide.gradle.environment.EnvironmentExtension
@@ -25,7 +25,7 @@ open class Reloader(val environment: EnvironmentExtension) {
 
     val configured get() = watchedContainers.isNotEmpty()
 
-    val retry = common.retry { afterSquaredSecond(common.prop.long("environment.reloader.retry") ?: 3) }
+    val retry = common.retry { afterSquaredSecond(common.prop.long("docker.reloader.retry") ?: 3) }
 
     fun start() {
         runBlocking {

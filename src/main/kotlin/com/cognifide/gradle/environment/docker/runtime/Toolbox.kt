@@ -8,10 +8,10 @@ class Toolbox(environment: EnvironmentExtension) : Base(environment) {
 
     override val name: String get() = NAME
 
-    override val hostIp: String get() = environment.prop.string("environment.docker.toolbox.hostIp")
+    override val hostIp: String get() = environment.prop.string("docker.toolbox.hostIp")
             ?: detectHostIp() ?: "192.168.99.100"
 
-    override val hostInternalIp: String get() = environment.prop.string("environment.docker.toolbox.hostInternalIp")
+    override val hostInternalIp: String get() = environment.prop.string("docker.toolbox.hostInternalIp")
             ?: detectHostInternalIp() ?: "10.0.2.2"
 
     @Suppress("TooGenericExceptionCaught")
@@ -23,9 +23,9 @@ class Toolbox(environment: EnvironmentExtension) : Base(environment) {
         null
     }
 
-    override val safeVolumes: Boolean get() = environment.prop.boolean("environment.docker.toolbox.safeVolumes") ?: true
+    override val safeVolumes: Boolean get() = environment.prop.boolean("docker.toolbox.safeVolumes") ?: true
 
-    var cygpathPath = environment.prop.string("environment.cygpath.path")
+    var cygpathPath = environment.prop.string("docker.toolbox.cygpath.path")
             ?: "C:\\Program Files\\Git\\usr\\bin\\cygpath.exe"
 
     override fun determinePath(path: String): String {

@@ -51,9 +51,14 @@ class HostOptions(private val environment: EnvironmentExtension) : Serializable 
         throw EnvironmentException("Environment has no hosts tagged with '${tags.joinToString(",")}'!")
     }
 
-    val updater by lazy { HostUpdater(environment) }
+    val updater by lazy {
+        HostUpdater(common).apply {
+            workDir.convention(environment.rootDir.dir("hosts"))
+            section.convention(environment.docker.stack.internalName)
+        }
+    }
 
     fun updater(options: HostUpdater.() -> Unit) = updater.using(options)
 
-    fun update() = updater.update()
+    fun update() = updater.update(defined.get())
 }
