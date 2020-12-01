@@ -44,8 +44,9 @@ class HostUpdater(val common: CommonExtension) {
         val dir = workDir.get().asFile.apply { mkdirs() }
 
         val entriesFile = dir.resolve("hosts.txt").apply {
-            logger.info("Generating hosts entries file: $this")
-            writeText(hosts.joinToString(System.lineSeparator()) { it.text })
+            val entriesText = hosts.joinToString(System.lineSeparator()) { it.text }
+            logger.info("Generating hosts entries file '$this' with contents:\n$entriesText")
+            writeText(entriesText)
         }
         val updaterJar = dir.resolve("hosts.jar").apply {
             logger.info("Providing hosts updater program: $this")
