@@ -11,9 +11,18 @@ class HostUpdater(val common: CommonExtension) {
 
     private val logger = project.logger
 
+    val enabled = common.obj.boolean {
+        convention(true)
+        common.prop.boolean("hosts.updater.enabled")?.let { set(it) }
+    }
+
     val interactive = common.obj.boolean {
         convention(true)
         common.prop.boolean("hosts.updater.interactive")?.let { set(it) }
+    }
+
+    val force = common.obj.boolean {
+        set(common.prop.flag("hosts.updater.force"))
     }
 
     val workDir = common.obj.dir {
@@ -36,17 +45,33 @@ class HostUpdater(val common: CommonExtension) {
         common.prop.string("hosts.updater.section")?.let { set(it) }
     }
 
+    fun update(hosts: Iterable<Host>) = update { hosts }
+
     @Suppress("MaxLineLength")
-    fun update(hosts: Iterable<Host>) {
-        val os = OperatingSystem.current()
-        val osFile = targetFile.get()
+    fun update(hostsProvider: () -> Iterable<Host>) {
+        if (!enabled.get()) {
+            logger.info("Hosts file updater is disabled!")
+            return
+        }
 
         val dir = workDir.get().asFile.apply { mkdirs() }
 
         val entriesFile = dir.resolve("hosts.txt").apply {
-            val entriesText = hosts.joinToString(System.lineSeparator()) { it.text }
-            logger.info("Generating hosts entries file '$this' with contents:\n$entriesText")
-            writeText(entriesText)
+            val hosts = hostsProvider()
+            val entriesNewText = hosts.joinToString(System.lineSeparator()) { it.text }.trim()
+            val entriesOldText = readText().trim()
+
+            if (!force.get() && (entriesNewText == entriesOldText)) {
+                logger.info(
+                        "Hosts file update is not needed!\n" +
+                        "Existing contents in file '$this' are up-to-date':\n" +
+                        entriesNewText
+                )
+                return@update
+            }
+
+            logger.info("Generating hosts entries file '$this' with contents:\n$entriesNewText")
+            writeText(entriesNewText)
         }
         val updaterJar = dir.resolve("hosts.jar").apply {
             logger.info("Providing hosts updater program: $this")
@@ -56,7 +81,10 @@ class HostUpdater(val common: CommonExtension) {
                 }
             }
         }
+
         val sectionName = section.get()
+        val os = OperatingSystem.current()
+        val osFile = targetFile.get()
 
         if (os.isWindows && interactive.get()) {
             val scriptFile = dir.resolve("hosts.bat")
