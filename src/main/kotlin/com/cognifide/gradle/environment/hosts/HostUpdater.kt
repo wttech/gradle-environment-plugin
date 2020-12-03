@@ -59,15 +59,16 @@ class HostUpdater(val common: CommonExtension) {
         val entriesFile = dir.resolve("hosts.txt").apply {
             val hosts = hostsProvider()
             val entriesNewText = hosts.joinToString(System.lineSeparator()) { it.text }.trim()
-            val entriesOldText = readText().trim()
 
-            if (!force.get() && (entriesNewText == entriesOldText)) {
-                logger.info(
-                        "Hosts file update is not needed!\n" +
-                        "Existing contents in file '$this' are up-to-date':\n" +
-                        entriesNewText
-                )
-                return@update
+            if (!force.get() && exists()) {
+                val entriesOldText = readText().trim()
+                if (entriesNewText == entriesOldText) {
+                    logger.info("Hosts file update is not needed!\n" +
+                            "Existing contents in file '$this' are up-to-date':\n" +
+                            entriesNewText
+                    )
+                    return@update
+                }
             }
 
             logger.info("Generating hosts entries file '$this' with contents:\n$entriesNewText")
