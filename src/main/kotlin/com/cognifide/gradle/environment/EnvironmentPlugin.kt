@@ -44,7 +44,7 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
             mustRunAfter(up)
         }
         val await = register<EnvironmentAwait>(EnvironmentAwait.NAME) {
-            mustRunAfter(up)
+            mustRunAfter(hosts, up)
         }
         register<EnvironmentReload>(EnvironmentReload.NAME) {
             mustRunAfter(up)
@@ -65,7 +65,7 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
             dependsOn(restart)
         }
         named<Setup>(Setup.NAME) {
-            dependsOn(up)
+            dependsOn(hosts, up, await)
         }
         named<Resetup>(Resetup.NAME) {
             dependsOn(resetup)

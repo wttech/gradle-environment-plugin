@@ -26,7 +26,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    implementation("com.cognifide.gradle:common-plugin:1.0.2")
+    implementation("com.cognifide.gradle:common-plugin:1.0.3")
     implementation("org.buildobjects:jproc:2.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5")
     implementation("org.apache.commons:commons-lang3:3.9")

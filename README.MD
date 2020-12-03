@@ -42,17 +42,14 @@ As of plugin is published at official Gradle Plugin Portal, see instructions fro
 
 Most of the configuration steps are automated. However, there are three manual steps to make this setup fully operating:
 
-1. [Install Docker](https://docs.docker.com/install/)
+* [Install Docker](https://docs.docker.com/install/)
     * [Mac](https://docs.docker.com/docker-for-mac/)
     * [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
     * Windows
         * [Desktop](https://docs.docker.com/docker-for-windows/install/) (highly recommended, using Hyper-V)
         * [Toolbox](https://docs.docker.com/toolbox/toolbox_install_windows/) (legacy, using VirtualBox)
 
-2. Setup hosts on local machine (admin rights are required to access `/etc/hosts` or `C:\Windows\System32\drivers\etc\hosts` file)
-    * Unix: execute `sudo gradlew environmentHosts --no-daemon`
-    * Windows: start PowerShell with "Run as administrator", then execute `./gradlew.bat environmentHosts --no-daemon`
-    
+
 ### Notice for Docker on Windows
 
 Ensure having shared folders enabled via GUI:
@@ -73,7 +70,7 @@ As a consequence, if project is located outside of *C:/Users* directory, there i
 
 To configure containers to be deployed using Docker Swarm, simply create standard Docker Compose file but with templating (file at path *src/environment/docker-compose.yml.peb*)
 
-```yml
+```pebble
 version: "3"
 services:
   httpd:
@@ -114,14 +111,14 @@ Moreover, plugin comes with rich DSL which allows to:
 * run callbacks on each container lifecycle event (resolve, up, reload, dev),
 * configure where container resources are stored,
 * configure health checks to be able to detect moment in build lifecycle when are container services are stable and be ready to perform next build tasks using these services,
-* configure hosts which should be apended to OS-specific hosts file.
+* configure hosts which should be appended to OS-specific hosts file.
 
 ```kotlin
 environment { // config for AEM environment running on Docker
     rootDir.set(prop.string("environment.rootDir")) // project.file(".environment")
     hosts { // domains to be appended to hosts file automatically
         "http://example.com" { tag("publish") }
-        "http://locahost:4502 { tag("author") }
+        "http://locahost:4502" { tag("author") }
     }
     docker { // Docker specific configuration
         containers {
@@ -210,26 +207,28 @@ Reloads virtualized environment by reloading all Docker containers (e.g. removin
 
 ## Task `environmentHosts`
 
-Prints hosts entries to be appended to OS-specific file.
+Amends hosts entries in OS-specific file.
 
 Example configuration:
 
 ```kotlin
 environment {
     hosts { // domains to be appended to hosts file automatically
-        "http://example.com" { tag("live site") }
-        "http://locahost:4502" { tag("cms authoring") }
-        "http://locahost:8080" { tag("dbms") }
+        "example.com" { tag("live site") }
+        "demo.example.com" { tag("demo site") }
+        "cms" { tag("cms authoring") }
     }
 }
 ```
 
-Result of running task `environmentHosts` will be an list of IP-domain pairs which should be appended to OS-specific file (e.g /etc/hosts on Unix). When using Docker Toolbox on Windows, IP may be different, as of it is using extra VM to run Docker and IP of that VM should be used instead of loopback IP (localhost / 127.0.0.1). Plugin is trying to make this difference transparent for build users.
+The task will run on Windows & Mac OS interactive process asking for administrative/sudo permissions to be able to edit the hosts file.
+On other OSes / Unix-based systems, the task will print a path to the generated script to be executed with sudo rights but in a non-interactive way (to be done separately right after this task execution.
 
-Consider creating scripts which will run this task and amend output to OS-specific hosts file automatically with requesting admin/sudo permissions. See examples for:
+Options:
 
-* [Windows](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts.bat),
-* [Unix](https://github.com/Cognifide/gradle-aem-multi/blob/master/env/hosts).
+- `hosts.updater.enabled=false` - allows to disable temporarily host amendmend (e.g on CI/CD),
+- `hosts.updater.interactive=false` - potentially useful when interactive mode does not work for unknown/OS-specific reason,
+- `hosts.updater.force=true` - by default, updater is lazy - it will not ask for administrative/sudo mode if the hosts file does not need to be updated.
 
 ## License
 
