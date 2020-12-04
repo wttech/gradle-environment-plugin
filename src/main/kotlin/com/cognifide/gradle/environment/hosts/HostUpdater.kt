@@ -47,7 +47,7 @@ class HostUpdater(val common: CommonExtension) {
 
     fun update(hosts: Collection<Host>) = update { hosts }
 
-    @Suppress("MaxLineLength")
+    @Suppress("MaxLineLength", "LongMethod", "ComplexMethod")
     fun update(hostsProvider: () -> Collection<Host>) {
         if (!enabled.get()) {
             logger.info("Hosts file updater is disabled!")
