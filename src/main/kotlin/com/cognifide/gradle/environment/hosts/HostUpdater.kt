@@ -45,36 +45,42 @@ class HostUpdater(val common: CommonExtension) {
         common.prop.string("hosts.updater.section")?.let { set(it) }
     }
 
-    fun update(hosts: Iterable<Host>) = update { hosts }
+    fun update(hosts: Collection<Host>) = update { hosts }
 
     @Suppress("MaxLineLength")
-    fun update(hostsProvider: () -> Iterable<Host>) {
+    fun update(hostsProvider: () -> Collection<Host>) {
         if (!enabled.get()) {
             logger.info("Hosts file updater is disabled!")
             return
         }
 
-        val dir = workDir.get().asFile.apply { mkdirs() }
+        val os = OperatingSystem.current()
+        val osFile = targetFile.get()
+        val sectionName = section.get()
+        val hosts = hostsProvider()
 
-        val entriesFile = dir.resolve("hosts.txt").apply {
-            val hosts = hostsProvider()
-            val entriesNewText = hosts.joinToString(System.lineSeparator()) { it.text }.trim()
-
-            if (!force.get() && exists()) {
-                val entriesOldText = readText().trim()
-                if (entriesNewText == entriesOldText) {
-                    logger.info("Hosts file update is not needed!\n" +
-                            "Existing contents in file '$this' are up-to-date':\n" +
-                            entriesNewText
-                    )
-                    return@update
-                }
-            }
-
-            logger.info("Generating hosts entries file '$this' with contents:\n$entriesNewText")
-            writeText(entriesNewText)
+        val sectionOld = HostSection.parseAll(osFile.asFile.readText()).firstOrNull { it.name == sectionName }
+        if (hosts.isEmpty() && sectionOld == null) {
+            logger.info("Hosts file update is not needed!\n" +
+                    "No hosts defined and no existing contents in file '$osFile'"
+            )
+            return
         }
-        val updaterJar = dir.resolve("hosts.jar").apply {
+
+        val sectionNew = HostSection(sectionName, hosts.map { it.text })
+        if (!force.get() && sectionOld != null && sectionNew.render() == sectionOld.render()) {
+            logger.info("Hosts file update is not needed!\n" +
+                    "Existing contents in file '$osFile' are up-to-date':\n$sectionOld"
+            )
+            return
+        }
+
+        val cwd = workDir.get().asFile.apply { mkdirs() }
+        val sectionFile = cwd.resolve("hosts.txt").apply {
+            logger.info("Generating hosts file '$this' with contents:\n$sectionNew")
+            writeText(sectionNew.render())
+        }
+        val updaterJar = cwd.resolve("hosts.jar").apply {
             logger.info("Providing hosts updater program: $this")
             outputStream().use { output ->
                 this@HostUpdater.javaClass.getResourceAsStream("/hosts.jar").use { input ->
@@ -83,28 +89,24 @@ class HostUpdater(val common: CommonExtension) {
             }
         }
 
-        val sectionName = section.get()
-        val os = OperatingSystem.current()
-        val osFile = targetFile.get()
-
         if (os.isWindows && interactive.get()) {
-            val scriptFile = dir.resolve("hosts.bat")
+            val scriptFile = cwd.resolve("hosts.bat")
             logger.info("Generating hosts updating script: $scriptFile")
 
             scriptFile.writeText("""
-                powershell -command "Start-Process cmd -ArgumentList '/C cd %CD% && java -jar $updaterJar $sectionName $entriesFile $osFile' -Verb runas"
+                powershell -command "Start-Process cmd -ArgumentList '/C cd %CD% && java -jar $updaterJar $sectionFile $osFile' -Verb runas"
             """.trimIndent())
             execAndHandleErrors(listOf("cmd", "/C", scriptFile.toString()))
             return
         }
 
-        val scriptFile = dir.resolve("hosts.sh")
+        val scriptFile = cwd.resolve("hosts.sh")
         logger.info("Generating hosts updating script: $scriptFile")
 
         if (os.isMacOsX && interactive.get()) {
             scriptFile.writeText("""
                     #!/bin/sh
-                    osascript -e "do shell script \"java -jar $updaterJar $sectionName $entriesFile $osFile\" with prompt \"Gradle Environment Hosts\" with administrator privileges" 
+                    osascript -e "do shell script \"java -jar $updaterJar $sectionFile $osFile\" with prompt \"Gradle Environment Hosts\" with administrator privileges" 
                 """.trimIndent())
             execOnMacAndHandleErrors(listOf("sh", scriptFile.toString()))
             return
@@ -112,7 +114,7 @@ class HostUpdater(val common: CommonExtension) {
 
         scriptFile.writeText("""
                     #!/bin/sh
-                    java -jar $updaterJar $sectionName $entriesFile $osFile
+                    java -jar $updaterJar $sectionFile $osFile
                 """.trimIndent())
         logger.lifecycle("To update environment hosts, run script below as administrator/super-user:\n$scriptFile")
     }

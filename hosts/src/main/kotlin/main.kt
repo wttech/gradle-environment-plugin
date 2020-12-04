@@ -1,20 +1,20 @@
 import java.io.File
 import kotlin.system.exitProcess
+import com.cognifide.gradle.environment.hosts.HostSection
 
 fun main(args: Array<String>) = try {
-    if (args.size != 3) {
-        println("Invalid arguments! Expected: [sectionName] [sectionEntriesFile] [hostsFile]")
+    if (args.size != 2) {
+        println("Invalid arguments! Expected: [sectionFile] [hostsFile]")
         exitProcess(1)
     }
 
-    val sourceName = args[0]
-    val sourceFile = File(args[1])
-    val targetFile = File(args[2])
+    val sourceFile = File(args[0])
+    val targetFile = File(args[1])
 
     val text = targetFile.readText()
-    val sections = Section.parseAll(text)
+    val sections = HostSection.parseAll(text)
 
-    val sourceSection = Section(sourceName, sourceFile.readText().lines().map { it.trim() })
+    val sourceSection = HostSection.parseAll(sourceFile.readText()).first()
     val targetSection = sections.find { it.name == sourceSection.name }
 
     if (targetSection != null) {
@@ -27,47 +27,4 @@ fun main(args: Array<String>) = try {
     println("Ensure using administrator/super-user privileges.")
     println("Error details: ${e.message}")
     exitProcess(1)
-}
-
-data class Section(val name: String, val entries: List<String>) {
-    fun render() = mutableListOf<String>().apply {
-        add("#environment-start")
-        add("#name=$name")
-        addAll(entries)
-        add("#environment-end")
-    }.joinToString(System.lineSeparator())
-
-    companion object {
-        fun parseAll(text: String): List<Section> {
-            val sections = mutableListOf<Section>()
-
-            var section = false
-            var sectionName = ""
-            val sectionLines = mutableListOf<String>()
-
-            text.lineSequence().forEach { line ->
-                when (val l = line.trim()) {
-                    "#environment-start" -> {
-                        section = true
-                    }
-                    "#environment-end" -> {
-                        sections.add(Section(sectionName, sectionLines.toList()))
-                        section = false
-                        sectionLines.clear()
-                    }
-                    else -> {
-                        if (section) {
-                            if (l.startsWith("#name=")) {
-                                sectionName = l.substringAfter("#name=")
-                            } else {
-                                sectionLines.add(l)
-                            }
-                        }
-                    }
-                }
-            }
-
-            return sections
-        }
-    }
 }

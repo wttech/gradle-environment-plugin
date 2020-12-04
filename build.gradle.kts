@@ -32,6 +32,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("commons-io:commons-io:2.6")
     implementation("org.apache.httpcomponents:httpclient:4.5.12")
+    compileOnly(project(":common"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 
@@ -58,6 +59,7 @@ val check by tasks.getting(Task::class) {
 tasks {
     jar {
         dependsOn(":hosts:jar")
+        from(provider { zipTree((project(":common").tasks.getByName("jar") as Jar).archiveFile) })
         from(provider { project(":hosts").tasks.getByName("jar") })
     }
 
@@ -76,11 +78,6 @@ tasks {
         archiveClassifier.set("javadoc")
         dependsOn("dokkaJavadoc")
         from("$buildDir/javadoc")
-    }
-
-    withType<JavaCompile>().configureEach{
-        sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-        targetCompatibility = JavaVersion.VERSION_1_8.toString()
     }
 
     withType<Test>().configureEach {
@@ -205,6 +202,15 @@ githubRelease {
             |
             |None.
             """.trimMargin()
+        }
+    }
+}
+
+allprojects {
+    plugins.withId("java") {
+        tasks.withType<JavaCompile>().configureEach{
+            sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+            targetCompatibility = JavaVersion.VERSION_1_8.toString()
         }
     }
 }
