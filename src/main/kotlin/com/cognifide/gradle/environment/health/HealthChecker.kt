@@ -25,7 +25,7 @@ class HealthChecker(val common: CommonExtension) {
         }
     }
 
-    var retry = common.retry { afterSquaredSecond(prop.long("healthChecker.retry") ?: 7) }
+    var retry = common.retry { afterSquaredSecond(prop.long("healthChecker.retry") ?: 10) }
 
     fun check(name: String, check: () -> Unit) {
         checks += HealthCheck(name, check)
