@@ -50,7 +50,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     fun healthChecks(options: HealthChecker.() -> Unit) = healthChecker.using(options)
 
-    val healthChecker by lazy { HealthChecker(this) }
+    val healthChecker by lazy { HealthChecker(common) }
 
     /**
      * Defines hosts to be appended to system specific hosts file.

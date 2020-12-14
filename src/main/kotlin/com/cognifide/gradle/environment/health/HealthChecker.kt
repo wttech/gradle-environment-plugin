@@ -1,15 +1,12 @@
 package com.cognifide.gradle.environment.health
 
+import com.cognifide.gradle.common.CommonExtension
 import com.cognifide.gradle.common.build.Retry
 import com.cognifide.gradle.common.http.HttpClient
 import com.cognifide.gradle.common.utils.Formats
-import com.cognifide.gradle.environment.EnvironmentExtension
-import com.cognifide.gradle.environment.EnvironmentException
 import org.apache.http.HttpStatus
 
-class HealthChecker(val environment: EnvironmentExtension) {
-
-    private val common = environment.common
+class HealthChecker(val common: CommonExtension) {
 
     private val logger = common.logger
 
@@ -47,7 +44,7 @@ class HealthChecker(val environment: EnvironmentExtension) {
 
         common.progress(checks.size) {
             try {
-                retry.withSleep<Unit, EnvironmentException> { no ->
+                retry.withSleep<Unit, HealthException> { no ->
                     reset()
 
                     step = when {
@@ -64,18 +61,19 @@ class HealthChecker(val environment: EnvironmentExtension) {
                     failed = all - passed
 
                     if (failed.isNotEmpty()) {
-                        throw EnvironmentException("There are failed environment health checks. Retrying...")
+                        logger.info(failed.joinToString("\n") { it.details })
+                        throw HealthException("There are failed environment health checks. Retrying...")
                     }
                 }
 
                 logger.lifecycle("Environment health check(s) succeed: $count")
-            } catch (e: EnvironmentException) {
+            } catch (e: HealthException) {
                 val message = "Environment health check(s) failed. Success ratio: $count:\n" +
                         all.sortedWith(compareBy({ it.passed }, { it.check.name })).joinToString("\n")
                 if (!verbose) {
                     logger.error(message)
                 } else {
-                    throw EnvironmentException(message)
+                    throw HealthException(message)
                 }
             }
         }

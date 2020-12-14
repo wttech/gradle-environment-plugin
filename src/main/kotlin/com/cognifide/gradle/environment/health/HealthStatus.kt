@@ -4,11 +4,11 @@ class HealthStatus(val check: HealthCheck, val cause: Exception? = null) {
 
     val passed: Boolean get() = cause == null
 
-    val status: String
-        get() = when (cause) {
-            null -> "[+] $check"
-            else -> "[-] $check | ${cause.message}"
-        }
+    val indicator get() = if (passed) "+" else "-"
 
-    override fun toString() = status.trim()
+    val details: String get() = if (cause != null) "$check | ${cause.message}" else check.toString()
+
+    val status: String get() = ("[$indicator] $details").trim()
+
+    override fun toString() = status
 }
