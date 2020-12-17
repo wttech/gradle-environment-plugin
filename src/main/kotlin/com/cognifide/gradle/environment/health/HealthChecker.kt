@@ -57,11 +57,14 @@ class HealthChecker(val common: CommonExtension) {
                             check.perform()
                         }
                     }.toList()
-                    passed = all.filter { it.passed }
+                    passed = all.filter { it.succeed }
                     failed = all - passed
 
+                    if (verbose) {
+                        logger.info(failed.sortedBy { it.check.name }.joinToString("\n"))
+                    }
+
                     if (failed.isNotEmpty()) {
-                        logger.info(failed.joinToString("\n") { it.details })
                         throw HealthException("There are failed environment health checks. Retrying...")
                     }
                 }
@@ -69,7 +72,7 @@ class HealthChecker(val common: CommonExtension) {
                 logger.lifecycle("Environment health check(s) succeed: $count")
             } catch (e: HealthException) {
                 val message = "Environment health check(s) failed. Success ratio: $count:\n" +
-                        all.sortedWith(compareBy({ it.passed }, { it.check.name })).joinToString("\n")
+                        all.sortedWith(compareBy({ it.succeed }, { it.check.name })).joinToString("\n")
                 if (!verbose) {
                     logger.error(message)
                 } else {
