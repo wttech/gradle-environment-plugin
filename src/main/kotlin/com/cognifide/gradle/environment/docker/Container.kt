@@ -230,7 +230,7 @@ class Container(val docker: Docker, val name: String) {
     fun cleanDir(vararg paths: String) = cleanDir(paths.asIterable())
 
     fun cleanDir(paths: Iterable<String>) {
-        val command = paths.joinToString(" && ") { "find $it -mindepth 1 -delete" }
+        val command = paths.joinToString(" && ") { "(test ! -d $it || find $it -mindepth 1 -delete)" }
         when (paths.count()) {
             1 -> execShell("Cleaning contents of directory at path '${paths.first()}'", command)
             else -> execShell("Cleaning contents of directories (${paths.count()})", command)
