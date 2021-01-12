@@ -33,20 +33,23 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
         val up = register<EnvironmentUp>(EnvironmentUp.NAME) {
             mustRunAfter(hosts, resolve, down, destroy)
         }
+        val reload = register<EnvironmentReload>(EnvironmentReload.NAME) {
+            mustRunAfter(hosts, up)
+        }
         val restart = register<EnvironmentRestart>(EnvironmentRestart.NAME) {
             dependsOn(down, up)
         }
+        val await = register<EnvironmentAwait>(EnvironmentAwait.NAME) {
+            mustRunAfter(hosts, up, reload)
+        }
+        val setup = register<EnvironmentSetup>(EnvironmentSetup.NAME) {
+            dependsOn(hosts, up, reload, await)
+        }
         val resetup = register<EnvironmentResetup>(EnvironmentResetup.NAME) {
-            dependsOn(destroy, up)
+            dependsOn(destroy, setup)
         }
 
         register<EnvironmentDev>(EnvironmentDev.NAME) {
-            mustRunAfter(up)
-        }
-        val await = register<EnvironmentAwait>(EnvironmentAwait.NAME) {
-            mustRunAfter(hosts, up)
-        }
-        register<EnvironmentReload>(EnvironmentReload.NAME) {
             mustRunAfter(up)
         }
 
@@ -65,7 +68,7 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
             dependsOn(restart)
         }
         named<Setup>(Setup.NAME) {
-            dependsOn(hosts, up, await)
+            dependsOn(setup)
         }
         named<Resetup>(Resetup.NAME) {
             dependsOn(resetup)
