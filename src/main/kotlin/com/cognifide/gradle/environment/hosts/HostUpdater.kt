@@ -13,21 +13,21 @@ class HostUpdater(val common: CommonExtension) {
 
     val enabled = common.obj.boolean {
         convention(true)
-        common.prop.boolean("hosts.updater.enabled")?.let { set(it) }
+        common.prop.boolean("hostUpdater.enabled")?.let { set(it) }
     }
 
     val interactive = common.obj.boolean {
         convention(true)
-        common.prop.boolean("hosts.updater.interactive")?.let { set(it) }
+        common.prop.boolean("hostUpdater.interactive")?.let { set(it) }
     }
 
     val force = common.obj.boolean {
-        set(common.prop.flag("hosts.updater.force"))
+        set(common.prop.flag("hostUpdater.force"))
     }
 
     val workDir = common.obj.dir {
         convention(project.layout.buildDirectory.dir("hosts"))
-        common.prop.file("hosts.updater.workDir")?.let { set(it) }
+        common.prop.file("hostUpdater.workDir")?.let { set(it) }
     }
 
     val targetFile = common.obj.file {
@@ -37,12 +37,12 @@ class HostUpdater(val common: CommonExtension) {
                 else -> "/etc/hosts"
             })
         })
-        common.prop.file("hosts.updater.targetFile")?.let { set(it) }
+        common.prop.file("hostUpdater.targetFile")?.let { set(it) }
     }
 
     val section = common.obj.string {
         convention(project.rootProject.name)
-        common.prop.string("hosts.updater.section")?.let { set(it) }
+        common.prop.string("hostUpdater.section")?.let { set(it) }
     }
 
     fun update(hosts: Collection<Host>) = update { hosts }
@@ -128,7 +128,7 @@ class HostUpdater(val common: CommonExtension) {
                 add("Consider troubleshooting:")
                 add("* move project files outside of 'Documents', 'Desktop' or 'Downloads' directories to avoid problems")
                 add("* or set the host updater work directory to a path directly under your files home in your gradle.properties file as a workaround:")
-                add("    * environment.hosts.updater.workDir=${System.getProperty("user.home")}/.gap/hosts")
+                add("    * hostUpdater.workDir=${System.getProperty("user.home")}/.gap/hosts")
 
                 logger.error(joinToString("\n"))
             }

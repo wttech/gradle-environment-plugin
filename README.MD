@@ -226,9 +226,9 @@ On other OSes / Unix-based systems, the task will print a path to the generated 
 
 Options:
 
-- `hosts.updater.enabled=false` - allows to disable temporarily host amendmend (e.g on CI/CD),
-- `hosts.updater.interactive=false` - potentially useful when interactive mode does not work for unknown/OS-specific reason,
-- `hosts.updater.force=true` - by default, updater is lazy - it will not ask for administrative/sudo mode if the hosts file does not need to be updated.
+- `hostUpdater.enabled=false` - allows to disable temporarily host amendmend (e.g on CI/CD),
+- `hostUpdater.interactive=false` - potentially useful when interactive mode does not work for unknown/OS-specific reason,
+- `hostUpdater.force=true` - by default, updater is lazy - it will not ask for administrative/sudo mode if the hosts file does not need to be updated.
 
 ## License
 
