@@ -2,10 +2,10 @@ package com.cognifide.gradle.environment
 
 import com.cognifide.gradle.common.CommonExtension
 import com.cognifide.gradle.common.build.Retry
+import com.cognifide.gradle.common.health.HealthChecker
+import com.cognifide.gradle.common.health.HealthStatus
 import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.docker.Docker
-import com.cognifide.gradle.environment.health.HealthChecker
-import com.cognifide.gradle.environment.health.HealthStatus
 import com.cognifide.gradle.environment.hosts.HostOptions
 import org.gradle.api.Project
 import java.io.Serializable
@@ -111,8 +111,8 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         logger.info("Checking $this")
 
         return when {
-            retry != null -> healthChecker.check(verbose, retry)
-            else -> healthChecker.check(verbose)
+            retry != null -> healthChecker.start(verbose, retry)
+            else -> healthChecker.start(verbose)
         }
     }
 
