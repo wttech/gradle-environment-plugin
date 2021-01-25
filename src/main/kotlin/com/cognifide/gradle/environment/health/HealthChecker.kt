@@ -20,7 +20,7 @@ class HealthChecker(val common: CommonExtension) {
             prop.boolean("healthChecker.http.connectionRetries")?.let { set(it) }
         }
         connectionTimeout.apply {
-            convention(3_000)
+            convention(5_000)
             prop.int("healthChecker.http.connectionTimeout")?.let { set(it) }
         }
     }
