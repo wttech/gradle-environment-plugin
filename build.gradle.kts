@@ -149,8 +149,8 @@ gradlePlugin {
 val pluginTags = listOf("docker", "swarm", "environment", "docker-compose")
 
 pluginBundle {
-    website = "https://github.com/Cognifide/gradle-environment-plugin"
-    vcsUrl = "https://github.com/Cognifide/gradle-environment-plugin.git"
+    website = "https://github.com/wttech/gradle-environment-plugin"
+    vcsUrl = "https://github.com/wttech/gradle-environment-plugin.git"
     description = "Gradle Environment Plugin"
     tags = pluginTags
 }
@@ -162,9 +162,9 @@ bintray {
     with(pkg) {
         repo = "maven-public"
         name = "gradle-environment-plugin"
-        userOrg = "cognifide"
+        userOrg = "wttech"
         setLicenses("Apache-2.0")
-        vcsUrl = "https://github.com/Cognifide/gradle-environment-plugin.git"
+        vcsUrl = "https://github.com/wttech/gradle-environment-plugin.git"
         setLabels(*pluginTags.toTypedArray())
         with(version) {
             name = project.version.toString()
@@ -177,7 +177,7 @@ bintray {
 }
 
 githubRelease {
-    owner("Cognifide")
+    owner("wttech")
     repo("gradle-environment-plugin")
     token((project.findProperty("github.token") ?: "").toString())
     tagName(project.version.toString())
