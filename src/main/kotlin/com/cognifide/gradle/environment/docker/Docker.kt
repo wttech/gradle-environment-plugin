@@ -19,9 +19,14 @@ class Docker(val environment: EnvironmentExtension) {
     val up: Boolean get() = stack.running && containers.up
 
     /**
-     * Represents Docker stack named 'aem' and provides API for manipulating it.
+     * Represents Docker stack and provides API for manipulating it.
      */
     val stack by lazy { Stack(environment) }
+
+    /**
+     * Configures Docker stack
+     */
+    fun stack(options: Stack.() -> Unit) = stack.using(options)
 
     /**
      * Provides API for manipulating Docker containers defined in 'docker-compose.yml'.
