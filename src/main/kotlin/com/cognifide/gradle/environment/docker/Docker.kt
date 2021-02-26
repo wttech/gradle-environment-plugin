@@ -75,7 +75,7 @@ class Docker(val environment: EnvironmentExtension) {
 
         targetFile.takeIf { it.exists() }?.delete()
         templateFile.copyTo(targetFile)
-        common.prop.expand(targetFile, composeProperties.get() + mapOf(
+        common.prop.expandFile(targetFile, composeProperties.get() + mapOf(
                 "docker" to this,
                 "project" to common.project
         ))
