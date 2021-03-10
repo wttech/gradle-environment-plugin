@@ -22,7 +22,6 @@ open class EnvironmentDestroy : EnvironmentDefaultTask() {
 
     init {
         description = "Destroys virtualized environment."
-        checkForce()
     }
 
     companion object {

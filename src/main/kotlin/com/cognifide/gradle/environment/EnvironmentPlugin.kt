@@ -3,6 +3,7 @@ package com.cognifide.gradle.environment
 import com.cognifide.gradle.common.CommonDefaultPlugin
 import com.cognifide.gradle.common.RuntimePlugin
 import com.cognifide.gradle.common.tasks.runtime.*
+import com.cognifide.gradle.common.checkForce
 import com.cognifide.gradle.environment.tasks.*
 import org.gradle.api.Project
 
@@ -29,7 +30,7 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
         val down = register<EnvironmentDown>(EnvironmentDown.NAME)
         val destroy = register<EnvironmentDestroy>(EnvironmentDestroy.NAME) {
             dependsOn(down)
-        }
+        }.also { checkForce(it) }
         val up = register<EnvironmentUp>(EnvironmentUp.NAME) {
             mustRunAfter(hosts, resolve, down, destroy)
         }
