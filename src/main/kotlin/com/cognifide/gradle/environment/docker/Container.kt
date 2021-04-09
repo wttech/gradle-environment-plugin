@@ -9,6 +9,7 @@ import org.gradle.internal.os.OperatingSystem
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 
+@Suppress("TooManyFunctions")
 class Container(val docker: Docker, val name: String) {
 
     val environment = docker.environment
