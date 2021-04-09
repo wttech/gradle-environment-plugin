@@ -1,27 +1,54 @@
 package com.cognifide.gradle.environment.docker
 
+import org.gradle.process.internal.streams.SafeStreams
 import java.io.InputStream
 import java.io.OutputStream
 
-interface DockerSpec {
+open class DockerSpec(protected val docker: Docker) {
 
-    var command: String
+    protected val environment = docker.environment
 
-    val args: List<String>
+    protected val runtime = docker.runtime
 
-    val fullCommand: String
+    val commandLine = environment.obj.list<String>()
 
-    var options: List<String>
+    var exitCodes = environment.obj.list<Int> { convention(listOf(0)) }
 
-    var exitCodes: List<Int>
+    fun exitCode(exitCode: Int?) {
+        if (exitCode != null) {
+            exitCodes.set(listOf(exitCode))
+        } else {
+            ignoreExitCodes()
+        }
+    }
 
-    var input: InputStream?
+    fun ignoreExitCodes() {
+        exitCodes.set(listOf())
+    }
 
-    var output: OutputStream?
+    var input = environment.obj.typed<InputStream>()
 
-    var errors: OutputStream?
+    val output = environment.obj.typed<OutputStream>()
 
-    fun option(value: String)
+    val errors = environment.obj.typed<OutputStream>()
 
-    fun ignoreExitCodes()
+    fun systemOut() {
+        input.set(SafeStreams.emptyInput())
+        output.set(SafeStreams.systemOut())
+        errors.set(SafeStreams.systemErr())
+    }
+
+    fun nullOut() {
+        input.set(SafeStreams.emptyInput())
+        output.set(NULL_OUTPUT_STREAM)
+        errors.set(NULL_OUTPUT_STREAM)
+    }
+
+    companion object {
+        val NULL_OUTPUT_STREAM = object : java.io.OutputStream() {
+            override fun write(b: Int) {
+                // intentionally empty
+            }
+        }
+    }
 }

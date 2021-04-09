@@ -15,7 +15,7 @@ open class Reloader(val environment: EnvironmentExtension) {
 
     private val logger = common.logger
 
-    private val allContainers get() = environment.docker.containers.defined
+    private val allContainers get() = environment.docker.containers.defined.get()
 
     private val watchedContainers get() = allContainers.filter { it.devOptions.watchDirs.files.isNotEmpty() }
 

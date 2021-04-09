@@ -27,11 +27,13 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.20")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
 
-    implementation("com.cognifide.gradle:common-plugin:1.0.23")
+    implementation("com.cognifide.gradle:common-plugin:1.0.25")
     implementation("org.buildobjects:jproc:2.3.0")
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("commons-io:commons-io:2.6")
     implementation("org.apache.httpcomponents:httpclient:4.5.12")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.3")
     compileOnly(project(":common"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")

@@ -3,10 +3,11 @@ package com.cognifide.gradle.environment.docker
 import com.cognifide.gradle.common.build.Behaviors
 import com.cognifide.gradle.environment.docker.container.ContainerException
 import com.cognifide.gradle.environment.docker.container.DevOptions
-import com.cognifide.gradle.environment.docker.container.ExecSpec
 import com.cognifide.gradle.environment.docker.container.HostFileManager
 import com.cognifide.gradle.environment.docker.exec.DirConfig
 import org.gradle.internal.os.OperatingSystem
+import java.io.ByteArrayOutputStream
+import java.nio.charset.StandardCharsets
 
 class Container(val docker: Docker, val name: String) {
 
@@ -135,9 +136,12 @@ class Container(val docker: Docker, val name: String) {
         reloadAction()
     }
 
-    fun exec(execSpec: ExecSpec.() -> Unit): DockerResult {
-        val spec = ExecSpec(environment).apply(execSpec)
-        val operation = spec.operation()
+    fun exec(execSpec: DockerExecSpec.() -> Unit): DockerResult {
+        val spec = DockerExecSpec(docker).apply {
+            id.set(this@Container.id)
+            apply(execSpec)
+        }
+        val operation = spec.operation.get()
 
         lateinit var result: DockerResult
         val action = {
@@ -149,7 +153,7 @@ class Container(val docker: Docker, val name: String) {
             }
         }
 
-        if (spec.indicator) {
+        if (spec.indicator.get()) {
             common.progress {
                 step = "Container '$name'"
                 message = operation
@@ -163,26 +167,44 @@ class Container(val docker: Docker, val name: String) {
         return result
     }
 
-    fun exec(command: String, exitCode: Int? = 0) = exec {
-        this.command = command
-        this.exitCodes = exitCode?.run { listOf(this) } ?: listOf()
+    fun exec(args: List<String>, exitCode: Int? = 0) = exec {
+        this.args.set(args)
+        this.exitCode(exitCode)
     }
 
-    fun exec(operation: String, command: String, exitCode: Int? = 0) = exec {
-        this.operation = { operation }
-        this.command = command
-        this.exitCodes = exitCode?.run { listOf(this) } ?: listOf()
+    fun exec(operation: String, args: List<String>, exitCode: Int? = 0) = exec {
+        this.operation.set(operation)
+        this.args.set(args)
+        this.exitCode(exitCode)
     }
 
-    fun execShell(command: String, exitCode: Int? = 0) = exec("sh -c '$command'", exitCode)
+    fun execShell(command: String, exitCode: Int? = 0) = exec {
+        this.argsShell(command)
+        this.exitCode(exitCode)
+    }
 
-    fun execShell(operation: String, command: String, exitCode: Int? = 0) = exec(operation, "sh -c '$command'", exitCode)
+    fun execShell(operation: String, command: String, exitCode: Int? = 0) = exec {
+        this.operation.set(operation)
+        this.argsShell(command)
+        this.exitCode(exitCode)
+    }
 
     fun execShellQuiet(command: String, exitCode: Int? = 0) = exec {
-        this.indicator = false
-        this.command = "sh -c '$command'"
-        this.exitCodes = exitCode?.run { listOf(this) } ?: listOf()
+        this.indicator.set(false)
+        this.argsShell(command)
+        this.exitCode(exitCode)
     }
+
+    fun execAsStream(spec: DockerExecSpec.() -> Unit) = ByteArrayOutputStream().also { out ->
+        exec {
+            nullOut()
+            output.set(out)
+            spec()
+        }
+        return out
+    }
+
+    fun execAsString(spec: DockerExecSpec.() -> Unit) = String(execAsStream(spec).toByteArray(), StandardCharsets.UTF_8)
 
     fun ensureFile(vararg paths: String) = ensureFile(paths.asIterable())
 
@@ -253,25 +275,12 @@ class Container(val docker: Docker, val name: String) {
         }
     }
 
-    private fun exec(spec: ExecSpec): DockerResult {
-        if (spec.command.isBlank()) {
-            throw ContainerException("Exec command cannot be blank!")
-        }
-
+    private fun exec(spec: DockerExecSpec): DockerResult {
         if (!running) {
-            throw ContainerException("Cannot exec command '${spec.command}' since Docker container '$name' is not running!")
+            throw ContainerException("Cannot exec command '${spec.command.get()}' since Docker container '$name' is not running!")
         }
-
-        val customSpec = DockerCustomSpec(spec, mutableListOf<String>().apply {
-            add("exec")
-            addAll(spec.options)
-            add(id!!)
-            addAll(DockerProcess.commandToArgs(spec.command))
-        })
-
-        logger.info("Executing command '${customSpec.fullCommand}' for Docker container '$name'")
-
-        return DockerProcess.execSpec(customSpec)
+        logger.info("Executing command '${spec.command.get()}' for Docker container '$name'")
+        return DockerProcess.execSpec(spec)
     }
 
     private fun isLockRequired(name: String) = lockRequired.contains(name)
