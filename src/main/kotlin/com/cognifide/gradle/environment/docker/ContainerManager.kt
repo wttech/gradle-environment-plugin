@@ -7,18 +7,17 @@ class ContainerManager(private val docker: Docker) {
 
     private val common = docker.environment.common
 
-    val defined = common.obj.list<Container> {
-        set(common.obj.provider {
-            when {
-                discover.get() -> discover()
-                else -> listOf()
-            }
-        })
-    }
+    val defined = common.obj.list<Container> { set(listOf()) }
+
+    val all get() = defined.get().ifEmpty { discover() }
 
     @Suppress("TooGenericExceptionCaught")
     private fun discover(): List<Container> {
-        val composeTemplateFile = docker.composeTemplateFile.get().asFile
+        val composeTemplateFile = docker.composeFile.get().asFile
+        if (!composeTemplateFile.exists()) {
+            return listOf()
+        }
+
         return try {
             val yml = composeTemplateFile.inputStream().buffered().use { Formats.asYml(it) }
             val names = yml.get("services").fieldNames().asSequence().toList()
@@ -57,7 +56,7 @@ class ContainerManager(private val docker: Docker) {
     /**
      * Get defined container by name.
      */
-    fun named(name: String): Container = defined.get().firstOrNull { it.name == name }
+    fun named(name: String): Container = all.firstOrNull { it.name == name }
             ?: throw DockerException("Container named '$name' is not defined!")
 
     /**
@@ -75,32 +74,32 @@ class ContainerManager(private val docker: Docker) {
     /**
      * Checks if all containers are running.
      */
-    val running: Boolean get() = defined.get().all { it.running }
+    val running: Boolean get() = all.all { it.running }
 
     /**
      * Checks if all containers are up (running and configured).
      */
-    val up: Boolean get() = defined.get().all { it.up }
+    val up: Boolean get() = all.all { it.up }
 
     fun resolve() {
-        common.progress(defined.get().size) {
+        common.progress(all.size) {
             step = "Resolving container(s)"
-            common.parallel.each(defined.get()) { container ->
+            common.parallel.each(all) { container ->
                 increment(container.name) { container.resolve() }
             }
         }
     }
 
     fun up() {
-        common.progress(defined.get().size) {
+        common.progress(all.size) {
             step = "Configuring container(s)"
 
             if (dependent.get()) {
-                defined.get().forEach { container ->
+                all.forEach { container ->
                     increment(container.name) { container.up() }
                 }
             } else {
-                common.parallel.each(defined.get()) { container ->
+                common.parallel.each(all) { container ->
                     increment(container.name) { container.up() }
                 }
             }
@@ -108,15 +107,15 @@ class ContainerManager(private val docker: Docker) {
     }
 
     fun reload() {
-        common.progress(defined.get().size) {
+        common.progress(all.size) {
             step = "Reloading container(s)"
 
             if (dependent.get()) {
-                defined.get().forEach { container ->
+                all.forEach { container ->
                     increment(container.name) { container.reload() }
                 }
             } else {
-                common.parallel.each(defined.get()) { container ->
+                common.parallel.each(all) { container ->
                     increment(container.name) { container.reload() }
                 }
             }

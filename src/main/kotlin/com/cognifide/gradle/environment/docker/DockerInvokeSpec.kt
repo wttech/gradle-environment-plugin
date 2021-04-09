@@ -28,7 +28,7 @@ open class DockerInvokeSpec(docker: Docker) : DockerSpec(docker) {
     val command = args.map { it.joinToString(" ") }
 
     val operation = environment.obj.string {
-        convention(command.map { "Executing command '$it'" })
+        convention(command.map { "Command: $it" })
     }
 
     val indicator = environment.obj.boolean { convention(true) }
