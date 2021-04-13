@@ -5,7 +5,6 @@ import com.cognifide.gradle.environment.docker.container.ContainerException
 import com.cognifide.gradle.environment.docker.container.DevOptions
 import com.cognifide.gradle.environment.docker.container.HostFileManager
 import com.cognifide.gradle.environment.docker.exec.DirConfig
-import com.cognifide.gradle.environment.docker.DockerProcess
 import org.gradle.internal.os.OperatingSystem
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -102,6 +101,7 @@ class Container(val docker: Docker, val name: String) {
         afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 60)
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun await() {
         common.progressIndicator {
             message = "Awaiting container '$name'"
