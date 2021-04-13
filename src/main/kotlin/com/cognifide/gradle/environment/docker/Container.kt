@@ -5,6 +5,7 @@ import com.cognifide.gradle.environment.docker.container.ContainerException
 import com.cognifide.gradle.environment.docker.container.DevOptions
 import com.cognifide.gradle.environment.docker.container.HostFileManager
 import com.cognifide.gradle.environment.docker.exec.DirConfig
+import com.cognifide.gradle.environment.docker.DockerProcess
 import org.gradle.internal.os.OperatingSystem
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -115,8 +116,16 @@ class Container(val docker: Docker, val name: String) {
                         }
 
                         add("Consider troubleshooting:")
-                        add("* using command: 'docker stack ps ${docker.stack.internalName.get()} --no-trunc'")
-                        add("* restarting Docker")
+
+                        try {
+                            val out = DockerProcess.execString { withArgs("stack", "ps", docker.stack.internalName.get(), "--no-trunc") }
+                            add("* restarting Docker")
+                            add("* using output of command: 'docker stack ps ${docker.stack.internalName.get()} --no-trunc':\n")
+                            add(out)
+                        } catch (e: Exception) {
+                            add("* using command: 'docker stack ps ${docker.stack.internalName.get()} --no-trunc'")
+                            add("* restarting Docker")
+                        }
 
                         throw ContainerException(joinToString("\n"))
                     }
