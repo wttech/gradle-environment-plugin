@@ -98,7 +98,7 @@ class Container(val docker: Docker, val name: String) {
     private val lockRequired = mutableSetOf<String>()
 
     var awaitRetry = common.retry {
-        afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 120)
+        afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 180)
     }
 
     @Suppress("TooGenericExceptionCaught")
