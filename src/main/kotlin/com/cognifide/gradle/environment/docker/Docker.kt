@@ -14,7 +14,9 @@ class Docker(val environment: EnvironmentExtension) {
 
     val running: Boolean get() = stack.running && containers.running
 
-    val up: Boolean get() = composeFile.get().asFile.exists() && stack.running && containers.up
+    val up: Boolean get() = stack.running && containers.up
+
+    val upToDate get() = composeFile.get().asFile.exists()
 
     /**
      * Represents Docker stack and provides API for manipulating it.
