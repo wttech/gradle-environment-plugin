@@ -16,7 +16,7 @@ class Docker(val environment: EnvironmentExtension) {
 
     val up: Boolean get() = stack.running && containers.up
 
-    val upToDate get() = composeFile.get().asFile.exists()
+    val upToDate get() = composeFile.get().asFile.exists() && composeFileContent() == generateComposeFileContent()
 
     /**
      * Represents Docker stack and provides API for manipulating it.
@@ -60,26 +60,37 @@ class Docker(val environment: EnvironmentExtension) {
     }
 
     fun init() {
-        syncComposeFile()
+        generateComposeFile()
         containers.resolve()
     }
 
-    private fun syncComposeFile() {
-        val templateFile = composeTemplateFile.get().asFile
+    @Suppress("TooGenericExceptionCaught")
+    private fun generateComposeFile() {
         val targetFile = composeFile.get().asFile
+        val templateFile = composeTemplateFile.get().asFile
 
-        logger.info("Generating Docker compose file '$targetFile' from template '$templateFile'")
+        try {
+            logger.info("Generating Docker compose file '$targetFile' from template '$templateFile'")
+            targetFile.apply {
+                parentFile.mkdirs()
+                writeText(generateComposeFileContent())
+            }
+        } catch (e: Exception) {
+            throw DockerException("Cannot generate compose file '$targetFile'! Cause '${e.message}'", e)
+        }
+    }
 
+    private fun composeFileContent() = composeFile.get().asFile.readText().trim()
+
+    private fun generateComposeFileContent(): String {
+        val templateFile = composeTemplateFile.get().asFile
         if (!templateFile.exists()) {
             throw DockerException("Docker compose file template does not exist: $templateFile")
         }
-
-        targetFile.takeIf { it.exists() }?.delete()
-        templateFile.copyTo(targetFile)
-        common.prop.expandFile(targetFile, composeProperties.get() + mapOf(
-                "docker" to this,
-                "project" to common.project
-        ))
+        return common.prop.expand(templateFile, composeProperties.get() + mapOf(
+            "docker" to this,
+            "project" to common.project
+        )).trim()
     }
 
     fun up() {

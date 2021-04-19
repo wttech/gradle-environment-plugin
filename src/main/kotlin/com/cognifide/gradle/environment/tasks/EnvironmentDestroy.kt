@@ -8,7 +8,7 @@ open class EnvironmentDestroy : EnvironmentDefaultTask() {
     @TaskAction
     fun destroy() {
         if (!environment.created) {
-            logger.lifecycle("Environment cannot be destroyed as it is not created")
+            logger.lifecycle("Skipping destroying the environment as it is not created.")
             return
         }
 

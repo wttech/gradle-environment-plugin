@@ -8,7 +8,7 @@ open class EnvironmentDown : EnvironmentDefaultTask() {
     @TaskAction
     fun down() {
         if (!environment.running) {
-            logger.lifecycle("Environment cannot be turned off on as it is not running")
+            logger.lifecycle("Skipping turning off the environment as it is not running.")
             return
         }
 
