@@ -69,6 +69,8 @@ class Stack(val environment: EnvironmentExtension) {
         true
     }
 
+    fun init() = initialized
+
     private fun initSwarm() {
         val result = DockerProcess.execQuietly {
             withTimeoutMillis(initTimeout.get())
@@ -86,6 +88,8 @@ class Stack(val environment: EnvironmentExtension) {
     var deployRetry = common.retry { afterSecond(this@Stack.common.prop.long("docker.stack.deployRetry") ?: 30) }
 
     fun deploy() {
+        init()
+
         common.progressIndicator {
             message = "Starting stack '${internalName.get()}'"
 
@@ -111,6 +115,8 @@ class Stack(val environment: EnvironmentExtension) {
     var undeployRetry = common.retry { afterSecond(this@Stack.common.prop.long("docker.stack.undeployRetry") ?: 30) }
 
     fun undeploy() {
+        init()
+
         common.progressIndicator {
             message = "Stopping stack '${internalName.get()}'"
 

@@ -65,6 +65,8 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     val up: Boolean get() = docker.up
 
+    val upToDate: Boolean get() = docker.upToDate
+
     fun resolve() {
         docker.containers.resolve()
     }
