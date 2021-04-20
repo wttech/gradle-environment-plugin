@@ -22,7 +22,7 @@ open class DockerInvokeSpec(docker: Docker) : DockerSpec(docker) {
     }
 
     fun argsShell(command: String) {
-        args.set(listOf("sh -c '$command'"))
+        args.set(listOf("sh", "-c", command))
     }
 
     val command = args.map { it.joinToString(" ") }

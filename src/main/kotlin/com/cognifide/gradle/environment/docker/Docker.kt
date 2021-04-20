@@ -114,7 +114,11 @@ class Docker(val environment: EnvironmentExtension) {
         this.exitCode(exitCode)
     }
 
-    fun runShell(image: String, command: String, exitCode: Int = 0) = run(image, listOf("sh -c '$command'"), exitCode)
+    fun runShell(image: String, command: String, exitCode: Int = 0) = run {
+        this.image.set(image)
+        this.argsShell(command)
+        this.exitCode(exitCode)
+    }
 
     fun run(operation: String, image: String, args: List<String>, exitCode: Int = 0) = run {
         this.operation.set(operation)
