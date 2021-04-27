@@ -95,7 +95,9 @@ class Stack(val environment: EnvironmentExtension) {
 
             try {
                 val composeFilePath = environment.docker.composeFile.get().asFile.path
-                DockerProcess.exec { withArgs("stack", "deploy", "-c", composeFilePath, internalName.get()) }
+                DockerProcess.exec {
+                    withArgs("stack", "deploy", "-c", composeFilePath, internalName.get(), "--with-registry-auth", "--resolve-image=always")
+                }
             } catch (e: DockerException) {
                 throw StackException("Failed to deploy Docker stack '${internalName.get()}'!", e)
             }

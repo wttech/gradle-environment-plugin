@@ -44,6 +44,16 @@ class Docker(val environment: EnvironmentExtension) {
      */
     val runtime by lazy { Runtime.determine(environment) }
 
+    /**
+     * Holds registry-related configuration options.
+     */
+    val registry by lazy { DockerRegistry(this) }
+
+    /**
+     * Configure registry-related options.
+     */
+    fun registry(options: DockerRegistry.() -> Unit) = registry.using(options)
+
     val composeFile = common.obj.relativeFile(environment.rootDir, "docker-compose.yml")
 
     val composeTemplateFile = common.obj.relativeFile(environment.sourceDir, "docker-compose.yml.peb")
@@ -60,6 +70,7 @@ class Docker(val environment: EnvironmentExtension) {
     }
 
     fun init() {
+        registry.loginAuto()
         generateComposeFile()
         containers.resolve()
     }
