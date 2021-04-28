@@ -49,10 +49,14 @@ class DockerRegistry(private val docker: Docker) {
                     parentFile.mkdirs()
                     writeText(password.orNull.orEmpty())
                 }
-                ProcBuilder("sh")
-                    .withArgs("-c", "cat ${passwordFile.absolutePath} | docker login ${url.orNull} -u ${user.orNull} --password-stdin")
-                    .ignoreExitStatus()
-                    .run()
+                try {
+                    ProcBuilder("sh")
+                        .withArgs("-c", "cat ${passwordFile.absolutePath} | docker login ${url.orNull} -u ${user.orNull} --password-stdin")
+                        .ignoreExitStatus()
+                        .run()
+                } finally {
+                    passwordFile.delete()
+                }
             }.exitValue
         } catch (e: Exception) {
             throw DockerException("Error occurred while logging in to Docker registry '${url.orNull}' as '${user.orNull}'! Cause: ${e.message}", e)
