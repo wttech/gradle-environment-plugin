@@ -23,10 +23,17 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
 
     fun port(port: Int) = port(port, port)
 
+    fun volume(containerPath: String) = volume(environment.project.projectDir.absolutePath, containerPath)
+
     fun volume(localFile: File, containerPath: String) = volume(localFile.absolutePath, containerPath)
 
     fun volume(localPath: String, containerPath: String) {
         volumes.put(localPath, containerPath)
+    }
+
+    fun workDirVolume(containerPath: String) {
+        workDir(containerPath)
+        volume(containerPath)
     }
 
     val cleanup = environment.obj.boolean { convention(false) }

@@ -50,6 +50,7 @@ object DockerProcess {
     @Suppress("SpreadOperator")
     fun execSpec(spec: DockerSpec): DockerResult {
         return DockerResult(exec {
+            withWorkingDirectory(spec.commandDir.get().asFile)
             withArgs(*spec.commandLine.get().map { it.toString() }.toTypedArray())
             withExpectedExitStatuses(spec.exitCodes.get().toSet())
             spec.input.orNull.let { withInputStream(it) }

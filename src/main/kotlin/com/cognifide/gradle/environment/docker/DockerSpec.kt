@@ -10,6 +10,8 @@ open class DockerSpec(protected val docker: Docker) {
 
     protected val runtime = docker.runtime
 
+    val commandDir = environment.obj.dir { convention(environment.project.layout.projectDirectory) }
+
     val commandLine = environment.obj.list<String>()
 
     var exitCodes = environment.obj.list<Int> { convention(listOf(0)) }
