@@ -38,7 +38,7 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
         commandLine.set(environment.obj.provider {
             mutableListOf<String>().apply {
                 add("run")
-                add("--name=${name.orNull}")
+                name.orNull?.let { add("--name=$it") }
                 if (detached.get()) add("-d")
                 addAll(volumes.get().map { (localPath, containerPath) -> "-v=${runtime.determinePath(localPath)}:$containerPath" })
                 addAll(ports.get().map { (hostPort, containerPort) -> "-p=$hostPort:$containerPort" })

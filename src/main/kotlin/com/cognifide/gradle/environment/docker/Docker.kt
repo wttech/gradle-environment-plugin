@@ -4,6 +4,7 @@ import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.EnvironmentExtension
 import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
+import org.gradle.process.internal.streams.SafeStreams
 import java.io.FileOutputStream
 
 class Docker(val environment: EnvironmentExtension) {
@@ -167,8 +168,21 @@ class Docker(val environment: EnvironmentExtension) {
     }
 
     private fun runInternal(spec: DockerRunSpec): DockerResult {
-        logger.info("Running Docker command: ${spec.command}")
+        logger.info("Running Docker command: ${spec.command.get().ifBlank { "<image_default>" }}")
         return DockerProcess.execSpec(spec)
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    fun pull(image: String) {
+        try {
+            DockerProcess.exec {
+                withArgs("pull", image)
+                withOutputStream(SafeStreams.systemOut())
+                withErrorStream(SafeStreams.systemErr())
+            }
+        } catch (e: Exception) {
+            throw DockerException("Cannot pull Docker image '$image'! Cause '${e.message}'", e)
+        }
     }
 
     fun daemon(spec: DockerDaemonSpec.() -> Unit) = daemonInteractive(spec)
