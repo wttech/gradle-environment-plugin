@@ -8,7 +8,6 @@ plugins {
     id("org.jetbrains.dokka") version "1.4.0-rc"
     id("com.gradle.plugin-publish") version "0.11.0"
     id("io.gitlab.arturbosch.detekt") version "1.6.0"
-    id("com.jfrog.bintray") version "1.8.4"
     id("net.researchgate.release") version "2.8.1"
     id("com.github.breadmoirai.github-release") version "2.2.10"
 }
@@ -107,7 +106,7 @@ tasks {
     }
 
     named("afterReleaseBuild") {
-        dependsOn("bintrayUpload", "publishPlugins")
+        dependsOn("publishPlugins")
     }
 
     named("githubRelease") {
@@ -154,27 +153,6 @@ pluginBundle {
     vcsUrl = "https://github.com/wttech/gradle-environment-plugin.git"
     description = "Gradle Environment Plugin"
     tags = pluginTags
-}
-
-bintray {
-    user = (project.findProperty("bintray.user") ?: System.getenv("BINTRAY_USER"))?.toString()
-    key = (project.findProperty("bintray.key") ?: System.getenv("BINTRAY_KEY"))?.toString()
-    setPublications("mavenJava")
-    with(pkg) {
-        repo = "maven-public"
-        name = "gradle-environment-plugin"
-        userOrg = "wttech"
-        setLicenses("Apache-2.0")
-        vcsUrl = "https://github.com/wttech/gradle-environment-plugin.git"
-        setLabels(*pluginTags.toTypedArray())
-        with(version) {
-            name = project.version.toString()
-            desc = "${project.description} ${project.version}"
-            vcsTag = project.version.toString()
-        }
-    }
-    publish = (project.findProperty("bintray.publish") ?: "true").toString().toBoolean()
-    override = (project.findProperty("bintray.override") ?: "false").toString().toBoolean()
 }
 
 githubRelease {
