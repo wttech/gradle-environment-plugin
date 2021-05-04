@@ -20,7 +20,6 @@ class DockerDaemonSpec(docker: Docker) : DockerRunSpec(docker) {
 
     init {
         nullOut()
-        cleanup.set(true)
         name.convention(id.map { "${docker.stack.internalName.get()}_$it" })
         id.convention(image.map { imageName ->
             val outputId = StringUtils.replaceEach(imageName, arrayOf("/", ":"), arrayOf(".", "."))

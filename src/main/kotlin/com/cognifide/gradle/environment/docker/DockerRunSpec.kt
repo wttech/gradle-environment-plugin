@@ -36,20 +36,22 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
         volume(containerPath)
     }
 
-    val cleanup = environment.obj.boolean { convention(false) }
+    val autoRemove = environment.obj.boolean { convention(true) }
 
-    var detached = environment.obj.boolean { convention(false) }
+    val detached = environment.obj.boolean { convention(false) }
 
     init {
         systemOut()
         commandLine.set(environment.obj.provider {
             mutableListOf<String>().apply {
                 add("run")
-                name.orNull?.let { add("--name=$it") }
-                if (detached.get()) add("-d")
+                addAll((mutableListOf<String>().apply {
+                    name.orNull?.let { addAll(listOf("--name", it)) }
+                    if (autoRemove.get()) add("--rm")
+                    if (detached.get()) add("-d")
+                } + options.get()).toSet())
                 addAll(volumes.get().map { (localPath, containerPath) -> "-v=${runtime.determinePath(localPath)}:$containerPath" })
                 addAll(ports.get().map { (hostPort, containerPort) -> "-p=$hostPort:$containerPort" })
-                addAll(options.get().apply { if (cleanup.get()) add("--rm") }.toSet())
                 add(image.orNull ?: throw DockerException("Docker run image is not specified!"))
                 addAll(args.get())
             }

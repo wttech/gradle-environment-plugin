@@ -45,10 +45,6 @@ open class DockerInvokeSpec(docker: Docker) : DockerSpec(docker) {
         options.addAll(listOf("--env-file", path))
     }
 
-    fun hostNetwork() {
-        options.addAll("--network", "host")
-    }
-
     val command = args.map { it.joinToString(" ") }
 
     val operation = environment.obj.string {
