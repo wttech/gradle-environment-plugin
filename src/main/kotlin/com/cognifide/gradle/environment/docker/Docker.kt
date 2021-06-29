@@ -33,7 +33,7 @@ class Docker(val environment: EnvironmentExtension) {
     /**
      * Represents Docker stack and provides API for manipulating it.
      */
-    val stack by lazy { Stack(environment) }
+    val stack: Stack by lazy { Stack.determine(environment) }
 
     /**
      * Configures Docker stack

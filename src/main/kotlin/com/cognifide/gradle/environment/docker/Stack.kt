@@ -1,15 +1,15 @@
 package com.cognifide.gradle.environment.docker
 
-import com.cognifide.gradle.common.build.Behaviors
 import com.cognifide.gradle.environment.EnvironmentExtension
-import com.cognifide.gradle.environment.docker.runtime.Toolbox
+import com.cognifide.gradle.environment.docker.stack.Compose
+import com.cognifide.gradle.environment.docker.stack.Swarm
 
 /**
  * Represents project specific Docker stack and provides API for manipulating it.
  */
-class Stack(val environment: EnvironmentExtension) {
+abstract class Stack(val environment: EnvironmentExtension) {
 
-    private val common = environment.common
+    protected val common = environment.common
 
     val internalName = common.obj.string {
         convention(common.project.rootProject.name)
@@ -17,8 +17,8 @@ class Stack(val environment: EnvironmentExtension) {
     }
 
     val networkSuffix = common.obj.string {
-        convention("docker-net")
-        common.prop.string("docker.networkSuffix")?.let { set(it) }
+        convention("default")
+        common.prop.string("docker.stack.networkSuffix")?.let { set(it) }
     }
 
     val networkName = common.obj.string {
@@ -43,103 +43,6 @@ class Stack(val environment: EnvironmentExtension) {
             }
         }
 
-    val initTimeout = common.obj.long {
-        convention(30_000L)
-        common.prop.long("docker.stack.initTimeout")?.let { set(it) }
-    }
-
-    val initialized: Boolean by lazy {
-        var error: Exception? = null
-
-        common.progressIndicator {
-            message = "Initializing stack"
-
-            try {
-                initSwarm()
-            } catch (e: DockerException) {
-                error = e
-            }
-        }
-
-        error?.let { e ->
-            throw StackException("Stack cannot be initialized. Is Docker running / installed? Error '${e.message}'", e)
-        }
-
-        true
-    }
-
-    fun init() = initialized
-
-    private fun initSwarm() {
-        val result = DockerProcess.execQuietly {
-            withTimeoutMillis(initTimeout.get())
-            withArgs("swarm", "init")
-
-            if (environment.docker.runtime is Toolbox) {
-                withArgs("--advertise-addr", environment.docker.runtime.hostIp)
-            }
-        }
-        if (result.exitValue != 0 && !result.errorString.contains("This node is already part of a swarm")) {
-            throw StackException("Failed to initialize Docker Swarm. Is Docker running / installed? Error: '${result.errorString}'")
-        }
-    }
-
-    var deployRetry = common.retry { afterSecond(this@Stack.common.prop.long("docker.stack.deployRetry") ?: 30) }
-
-    fun deploy() {
-        init()
-
-        common.progressIndicator {
-            message = "Starting stack '${internalName.get()}'"
-
-            try {
-                val composeFilePath = environment.docker.composeFile.get().asFile.path
-                DockerProcess.exec {
-                    withArgs("stack", "deploy", "-c", composeFilePath, internalName.get(), "--with-registry-auth", "--resolve-image=always")
-                }
-            } catch (e: DockerException) {
-                throw StackException("Failed to deploy Docker stack '${internalName.get()}'!", e)
-            }
-
-            message = "Awaiting started stack '${internalName.get()}'"
-            Behaviors.waitUntil(deployRetry.delay) { timer ->
-                val running = networkAvailable
-                if (timer.ticks == deployRetry.times && !running) {
-                    throw StackException("Failed to start stack named '${internalName.get()}'!")
-                }
-
-                !running
-            }
-        }
-    }
-
-    var undeployRetry = common.retry { afterSecond(this@Stack.common.prop.long("docker.stack.undeployRetry") ?: 30) }
-
-    fun undeploy() {
-        init()
-
-        common.progressIndicator {
-            message = "Stopping stack '${internalName.get()}'"
-
-            try {
-                DockerProcess.exec { withArgs("stack", "rm", internalName.get()) }
-            } catch (e: DockerException) {
-                throw StackException("Failed to remove Docker stack '${internalName.get()}'!", e)
-            }
-
-            message = "Awaiting stopped stack '${internalName.get()}'"
-            Behaviors.waitUntil(undeployRetry.delay) { timer ->
-                val running = networkAvailable
-                if (timer.ticks == undeployRetry.times && running) {
-                    throw StackException("Failed to stop stack named '${internalName.get()}'!" +
-                            " Try to stop manually using Docker command: 'docker stack rm ${internalName.get()}'")
-                }
-
-                running
-            }
-        }
-    }
-
     val running: Boolean get() = initialized && networkAvailable
 
     fun reset() {
@@ -147,25 +50,27 @@ class Stack(val environment: EnvironmentExtension) {
         deploy()
     }
 
-    @Suppress("TooGenericExceptionCaught")
-    fun ps() = try {
-        DockerProcess.execString { withArgs("stack", "ps", internalName.get(), "--no-trunc") }
-    } catch (e: Exception) {
-        throw StackException("Cannot list processes in Docker stack named '${internalName.get()}'!", e)
-    }
+    abstract val initialized: Boolean
 
-    @Suppress("TooGenericExceptionCaught")
-    fun troubleshoot(): List<String> = mutableListOf<String>().apply {
-        add("Consider troubleshooting:")
+    abstract fun init()
 
-        try {
-            val out = ps()
-            add("* restarting Docker")
-            add("* using output of command: 'docker stack ps ${internalName.get()} --no-trunc':\n")
-            add(out)
-        } catch (e: Exception) {
-            add("* using command: 'docker stack ps ${internalName.get()} --no-trunc'")
-            add("* restarting Docker")
+    abstract fun deploy()
+
+    abstract fun undeploy()
+
+    abstract fun troubleshoot(): List<String>
+
+    protected val composeFilePath get() = environment.docker.composeFile.get().asFile.path
+
+    companion object {
+
+        fun determine(env: EnvironmentExtension) = env.prop.string("docker.stack")
+            ?.let { of(env, it) } ?: Compose(env)
+
+        fun of(env: EnvironmentExtension, name: String): Stack = when (name.toLowerCase()) {
+            Compose.NAME -> Compose(env)
+            Swarm.NAME -> Swarm(env)
+            else -> throw DockerException("Unsupported Docker stack '$name'")
         }
     }
 }
