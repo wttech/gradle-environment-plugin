@@ -110,23 +110,10 @@ class Container(val docker: Docker, val name: String) {
                 if (timer.ticks == awaitRetry.times && !running) {
                     mutableListOf<String>().apply {
                         add("Failed to await container '$name'!")
-
                         if (OperatingSystem.current().isWindows) {
                             add("Ensure having shared drives configured and reset performed after changing Windows credentials.")
                         }
-
-                        add("Consider troubleshooting:")
-
-                        try {
-                            val out = DockerProcess.execString { withArgs("stack", "ps", docker.stack.internalName.get(), "--no-trunc") }
-                            add("* restarting Docker")
-                            add("* using output of command: 'docker stack ps ${docker.stack.internalName.get()} --no-trunc':\n")
-                            add(out)
-                        } catch (e: Exception) {
-                            add("* using command: 'docker stack ps ${docker.stack.internalName.get()} --no-trunc'")
-                            add("* restarting Docker")
-                        }
-
+                        addAll(docker.stack.troubleshoot())
                         throw ContainerException(joinToString("\n"))
                     }
                 }

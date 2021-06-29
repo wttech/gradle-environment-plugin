@@ -2,7 +2,6 @@ package com.cognifide.gradle.environment.docker
 
 import com.cognifide.gradle.common.build.Behaviors
 import com.cognifide.gradle.environment.EnvironmentExtension
-import com.cognifide.gradle.environment.EnvironmentException
 import com.cognifide.gradle.environment.docker.runtime.Toolbox
 
 /**
@@ -63,7 +62,7 @@ class Stack(val environment: EnvironmentExtension) {
         }
 
         error?.let { e ->
-            throw EnvironmentException("Stack cannot be initialized. Is Docker running / installed? Error '${e.message}'", e)
+            throw StackException("Stack cannot be initialized. Is Docker running / installed? Error '${e.message}'", e)
         }
 
         true
@@ -106,7 +105,7 @@ class Stack(val environment: EnvironmentExtension) {
             Behaviors.waitUntil(deployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == deployRetry.times && !running) {
-                    throw EnvironmentException("Failed to start stack named '${internalName.get()}'!")
+                    throw StackException("Failed to start stack named '${internalName.get()}'!")
                 }
 
                 !running
@@ -132,7 +131,7 @@ class Stack(val environment: EnvironmentExtension) {
             Behaviors.waitUntil(undeployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == undeployRetry.times && running) {
-                    throw EnvironmentException("Failed to stop stack named '${internalName.get()}'!" +
+                    throw StackException("Failed to stop stack named '${internalName.get()}'!" +
                             " Try to stop manually using Docker command: 'docker stack rm ${internalName.get()}'")
                 }
 
@@ -146,5 +145,27 @@ class Stack(val environment: EnvironmentExtension) {
     fun reset() {
         undeploy()
         deploy()
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    fun ps() = try {
+        DockerProcess.execString { withArgs("stack", "ps", internalName.get(), "--no-trunc") }
+    } catch (e: Exception) {
+        throw StackException("Cannot list processes in Docker stack named '${internalName.get()}'!", e)
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    fun troubleshoot(): List<String> = mutableListOf<String>().apply {
+        add("Consider troubleshooting:")
+
+        try {
+            val out = ps()
+            add("* restarting Docker")
+            add("* using output of command: 'docker stack ps ${internalName.get()} --no-trunc':\n")
+            add(out)
+        } catch (e: Exception) {
+            add("* using command: 'docker stack ps ${internalName.get()} --no-trunc'")
+            add("* restarting Docker")
+        }
     }
 }

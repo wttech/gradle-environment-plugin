@@ -80,6 +80,8 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         logger.info("Turning on: $this")
         docker.init()
         docker.up()
+        docker.checkUp()
+
         logger.info("Turned on: $this")
     }
 

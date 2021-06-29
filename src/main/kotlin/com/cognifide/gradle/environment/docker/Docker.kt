@@ -1,11 +1,13 @@
 package com.cognifide.gradle.environment.docker
 
+import com.cognifide.gradle.common.build.Behaviors
 import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.EnvironmentExtension
 import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.process.internal.streams.SafeStreams
 import java.io.FileOutputStream
+import java.util.concurrent.TimeUnit
 
 class Docker(val environment: EnvironmentExtension) {
 
@@ -18,6 +20,15 @@ class Docker(val environment: EnvironmentExtension) {
     val up: Boolean get() = stack.running && containers.up
 
     val upToDate get() = composeFile.get().asFile.exists() && composeFileContent() == generateComposeFileContent()
+
+    /**
+     * How long wait to wait until checking if environment remains up.
+     * Checks if containers are not being restarted after running hooks.
+     */
+    val upCheck = common.obj.long {
+        convention(TimeUnit.SECONDS.toMillis(1))
+        common.prop.long("docker.upCheck")?.let { set(it) }
+    }
 
     /**
      * Represents Docker stack and provides API for manipulating it.
@@ -103,6 +114,26 @@ class Docker(val environment: EnvironmentExtension) {
             "docker" to this,
             "project" to common.project
         )).trim()
+    }
+
+    fun checkUp() {
+        if (upCheck.get() > 0) {
+            common.progress {
+                step = "Docker checking"
+                message = "Delaying after initial up"
+                Behaviors.waitFor(upCheck.get())
+                message = "Verifying if still up"
+                if (!up) {
+                    throw DockerException(mutableListOf<String>().apply {
+                        add("Docker environment was up only temporarily and its state changed after running up hooks!")
+                        add("Most probably container manager like Docker Swarm has restarted the container" +
+                                " as its entrypoint exited with a non-zero status code.")
+                        add("")
+                        addAll(stack.troubleshoot())
+                    }.joinToString("\n"))
+                }
+            }
+        }
     }
 
     fun up() {
