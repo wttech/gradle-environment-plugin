@@ -19,7 +19,7 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
         var error: Exception? = null
 
         common.progressIndicator {
-            message = "Initializing stack"
+            message = "Initializing stack - Docker Compose"
 
             try {
                 initCompose()
@@ -29,7 +29,7 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
         }
 
         error?.let { e ->
-            throw StackException("Compose stack cannot be initialized. Is Docker running / installed? Error '${e.message}'", e)
+            throw StackException("Docker Compose stack cannot be initialized. Is Docker running / installed? Error '${e.message}'", e)
         }
 
         true
@@ -62,14 +62,14 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
                     withArgs("compose", "-p", internalName.get(), "-f", composeFilePath, "up", "-d")
                 }
             } catch (e: DockerException) {
-                throw StackException("Failed to deploy Docker stack '${internalName.get()}'!", e)
+                throw StackException("Failed to deploy Docker Compose stack '${internalName.get()}'!", e)
             }
 
             message = "Awaiting started stack '${internalName.get()}'"
             Behaviors.waitUntil(deployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == deployRetry.times && !running) {
-                    throw StackException("Failed to start stack named '${internalName.get()}'!")
+                    throw StackException("Failed to start Docker Compose stack named '${internalName.get()}'!")
                 }
 
                 !running
@@ -89,7 +89,7 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
             try {
                 DockerProcess.exec { withArgs(*args) }
             } catch (e: DockerException) {
-                throw StackException("Failed to remove Docker stack '${internalName.get()}'!", e)
+                throw StackException("Failed to remove Docker Compose stack '${internalName.get()}'!", e)
             }
 
             message = "Awaiting stopped stack '${internalName.get()}'"
@@ -114,7 +114,7 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
             val out = try {
                 DockerProcess.execString { withArgs(*psArgs) }
             } catch (e: Exception) {
-                throw StackException("Cannot list processes in Docker stack named '${internalName.get()}'!", e)
+                throw StackException("Cannot list processes in Docker Compose stack named '${internalName.get()}'!", e)
             }
             add("* restarting Docker")
             add("* using output of command: 'docker ${psArgs.joinToString(" ")}':\n")

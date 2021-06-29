@@ -17,7 +17,7 @@ abstract class Stack(val environment: EnvironmentExtension) {
     }
 
     val networkSuffix = common.obj.string {
-        convention("docker-net")
+        convention("default")
         common.prop.string("docker.stack.networkSuffix")?.let { set(it) }
     }
 

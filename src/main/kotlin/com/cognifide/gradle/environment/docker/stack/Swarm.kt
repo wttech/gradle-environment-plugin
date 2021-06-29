@@ -20,7 +20,7 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
         var error: Exception? = null
 
         common.progressIndicator {
-            message = "Initializing stack"
+            message = "Initializing stack - Docker Swarm"
 
             try {
                 initSwarm()
@@ -30,7 +30,7 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
         }
 
         error?.let { e ->
-            throw StackException("Stack cannot be initialized. Is Docker running / installed? Error '${e.message}'", e)
+            throw StackException("Docker Swarm stack cannot be initialized. Is Docker running / installed? Error '${e.message}'", e)
         }
 
         true
@@ -67,14 +67,14 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
                     withArgs("stack", "deploy", "-c", composeFilePath, internalName.get(), "--with-registry-auth", "--resolve-image=always")
                 }
             } catch (e: DockerException) {
-                throw StackException("Failed to deploy Docker stack '${internalName.get()}'!", e)
+                throw StackException("Failed to deploy Docker Swarm stack '${internalName.get()}'!", e)
             }
 
             message = "Awaiting started stack '${internalName.get()}'"
             Behaviors.waitUntil(deployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == deployRetry.times && !running) {
-                    throw StackException("Failed to start stack named '${internalName.get()}'!")
+                    throw StackException("Failed to start Docker Swarm stack named '${internalName.get()}'!")
                 }
 
                 !running
@@ -94,14 +94,14 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
             try {
                 DockerProcess.exec { withArgs(*args) }
             } catch (e: DockerException) {
-                throw StackException("Failed to remove Docker stack '${internalName.get()}'!", e)
+                throw StackException("Failed to remove Docker Swarm stack '${internalName.get()}'!", e)
             }
 
             message = "Awaiting stopped stack '${internalName.get()}'"
             Behaviors.waitUntil(undeployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == undeployRetry.times && running) {
-                    throw StackException("Failed to stop stack named '${internalName.get()}'!" +
+                    throw StackException("Failed to stop Docker Swarm stack named '${internalName.get()}'!" +
                             " Try to stop manually using Docker command: 'docker ${args.joinToString(" ")}}'")
                 }
 
@@ -119,7 +119,7 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
             val out = try {
                 DockerProcess.execString { withArgs(*psArgs) }
             } catch (e: Exception) {
-                throw StackException("Cannot list processes in Docker stack named '${internalName.get()}'!", e)
+                throw StackException("Cannot list processes in Docker Swarm stack named '${internalName.get()}'!", e)
             }
             add("* restarting Docker")
             add("* using output of command: 'docker ${psArgs.joinToString(" ")}':\n")
