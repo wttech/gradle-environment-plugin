@@ -7,7 +7,6 @@ import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.process.internal.streams.SafeStreams
 import java.io.FileOutputStream
-import java.util.concurrent.TimeUnit
 
 class Docker(val environment: EnvironmentExtension) {
 
@@ -26,7 +25,7 @@ class Docker(val environment: EnvironmentExtension) {
      * Checks if containers are not being restarted after running hooks.
      */
     val upCheck = common.obj.long {
-        convention(TimeUnit.SECONDS.toMillis(1))
+        convention(0)
         common.prop.long("docker.upCheck")?.let { set(it) }
     }
 
@@ -73,7 +72,8 @@ class Docker(val environment: EnvironmentExtension) {
     val composeProperties = common.obj.map<String, Any?> {
         set(
             mapOf(
-                "configPath" to runtime.determinePath(environment.sourceDir.get().asFile),
+                "sourcePath" to runtime.determinePath(environment.sourceDir.get().asFile),
+                "buildPath" to runtime.determinePath(environment.buildDir.get().asFile),
                 "workPath" to runtime.determinePath(environment.rootDir.get().asFile),
                 "rootPath" to runtime.determinePath(environment.project.rootProject.projectDir),
                 "homePath" to runtime.determinePath(environment.project.file(System.getProperty("user.home")))

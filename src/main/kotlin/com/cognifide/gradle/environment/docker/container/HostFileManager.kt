@@ -25,7 +25,7 @@ class HostFileManager(val container: Container) {
     fun configFile(path: String) = configDir.get().asFile.resolve(path)
 
     private var fileResolverOptions: FileResolver.() -> Unit = {
-        downloadDir.convention(common.obj.buildDir("environment/host"))
+        downloadDir.convention(docker.environment.buildDir.dir("host"))
     }
 
     fun fileResolver(options: FileResolver.() -> Unit) {

@@ -29,6 +29,12 @@ open class EnvironmentExtension(val project: Project) : Serializable {
     }
 
     /**
+     * Path for temporary files needed to set up environment like:
+     * generated SSL certificates, unpacked archive contents, etc.
+     */
+    val buildDir = obj.buildDir("environment")
+
+    /**
      * Convention directory for storing environment specific configuration files.
      */
     val sourceDir = obj.dir {
