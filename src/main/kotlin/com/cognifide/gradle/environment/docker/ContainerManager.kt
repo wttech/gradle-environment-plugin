@@ -3,34 +3,29 @@ package com.cognifide.gradle.environment.docker
 import com.cognifide.gradle.common.utils.Formats
 import com.cognifide.gradle.environment.EnvironmentException
 
-class ContainerManager(private val docker: Docker) {
+class ContainerManager(val docker: Docker) {
 
     private val common = docker.environment.common
 
     val defined = common.obj.list<Container> { set(listOf()) }
 
-    val all get() = defined.get().ifEmpty { discover() }
+    val all get() = defined.get() + (composeNames - defined.get().map { it.name }).map { Container(this, it) }
 
     @Suppress("TooGenericExceptionCaught")
-    private fun discover(): List<Container> {
-        val composeTemplateFile = docker.composeFile.get().asFile
-        if (!composeTemplateFile.exists()) {
-            return listOf()
-        }
+    val composeNames: List<String>
+        get() {
+            val composeTemplateFile = docker.composeFile.get().asFile
+            if (!composeTemplateFile.exists()) {
+                return listOf()
+            }
 
-        return try {
-            val yml = composeTemplateFile.inputStream().buffered().use { Formats.asYml(it) }
-            val names = yml.get("services").fieldNames().asSequence().toList()
-            names.map { Container(docker, it) }
-        } catch (e: Exception) {
-            throw EnvironmentException("Cannot discover containers from template file '$composeTemplateFile'! Cause: ${e.message}", e)
+            return try {
+                val yml = composeTemplateFile.inputStream().buffered().use { Formats.asYml(it) }
+                yml.get("services").fieldNames().asSequence().toList()
+            } catch (e: Exception) {
+                throw EnvironmentException("Cannot discover containers from template file '$composeTemplateFile'! Cause: ${e.message}", e)
+            }
         }
-    }
-
-    val discover = common.obj.boolean {
-        convention(true)
-        common.prop.boolean("docker.container.discover")?.let { set(it) }
-    }
 
     val dependent = common.obj.boolean {
         convention(true)
@@ -41,7 +36,7 @@ class ContainerManager(private val docker: Docker) {
      * Define container.
      */
     fun define(name: String, definition: Container.() -> Unit): Container {
-        return Container(docker, name).apply { definition(); defined.add(this) }
+        return Container(this, name).apply { definition(); defined.add(this) }
     }
 
     fun define(vararg names: String) = define(names.asIterable())
@@ -68,7 +63,7 @@ class ContainerManager(private val docker: Docker) {
      * Do action for undefined container.
      */
     fun use(name: String, action: Container.() -> Unit) {
-        Container(docker, name).apply(action)
+        Container(this, name).apply(action)
     }
 
     /**

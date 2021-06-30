@@ -10,7 +10,9 @@ import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 
 @Suppress("TooManyFunctions")
-class Container(val docker: Docker, val name: String) {
+class Container(val manager: ContainerManager, val name: String) {
+
+    val docker = manager.docker
 
     val environment = docker.environment
 
@@ -33,6 +35,9 @@ class Container(val docker: Docker, val name: String) {
     }
 
     fun resolve() {
+        if (!composeDefined) {
+            throw ContainerException("Container '$name' is not defined in compose template file '${docker.composeTemplateFile.get().asFile}'!")
+        }
         resolveAction(host)
     }
 
@@ -76,6 +81,8 @@ class Container(val docker: Docker, val name: String) {
                 throw ContainerException("Failed to load Docker container ID for name '$internalName'!", e)
             }
         }
+
+    val composeDefined: Boolean get() = manager.composeNames.contains(name)
 
     val running: Boolean
         get() {
@@ -274,7 +281,8 @@ class Container(val docker: Docker, val name: String) {
 
     private fun exec(spec: DockerExecSpec): DockerResult {
         if (!running) {
-            throw ContainerException("Cannot exec command '${spec.command.get()}' since Docker container '$name' is not running!")
+            throw ContainerException("Cannot exec command '${spec.command.get()}' since Docker container '$name' is not " +
+                    "!")
         }
         logger.info("Executing command '${spec.command.get()}' for Docker container '$name'")
         return DockerProcess.execSpec(spec)

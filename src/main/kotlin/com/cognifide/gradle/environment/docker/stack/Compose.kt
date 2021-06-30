@@ -109,7 +109,7 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
     override fun troubleshoot(): List<String> = mutableListOf<String>().apply {
         add("Consider troubleshooting:")
 
-        val psArgs = arrayOf("compose", "-p", internalName.get(), "ps", "--no-trunc")
+        val psArgs = arrayOf("compose", "-p", internalName.get(), "ps")
         try {
             val out = try {
                 DockerProcess.execString { withArgs(*psArgs) }
