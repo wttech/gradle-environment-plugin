@@ -281,8 +281,7 @@ class Container(val manager: ContainerManager, val name: String) {
 
     private fun exec(spec: DockerExecSpec): DockerResult {
         if (!running) {
-            throw ContainerException("Cannot exec command '${spec.command.get()}' since Docker container '$name' is not " +
-                    "!")
+            throw ContainerException("Cannot exec command '${spec.command.get()}' since Docker container '$name' is not running!")
         }
         logger.info("Executing command '${spec.command.get()}' for Docker container '$name'")
         return DockerProcess.execSpec(spec)
