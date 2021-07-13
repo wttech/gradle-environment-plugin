@@ -25,7 +25,7 @@
 
 ## About
 
-Provides seamless Gradle integration with Docker & Swarm. Hides many OS-specific glitches from unexperienced Docker users.
+Provides seamless Gradle integration with Docker & Compose/Swarm. Hides many OS-specific glitches from unexperienced Docker users.
 
 Controls virtualized environment consisting of any Docker-compatible software (e.g Apache Web Server (HTTPD), SQL/noSQL databases).
 Such software is deployed as [Docker Containers](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
