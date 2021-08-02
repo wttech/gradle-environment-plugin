@@ -3,12 +3,13 @@ package com.cognifide.gradle.environment.docker.stack
 import com.cognifide.gradle.common.build.Behaviors
 import com.cognifide.gradle.environment.EnvironmentExtension
 import com.cognifide.gradle.environment.docker.DockerException
-import com.cognifide.gradle.environment.docker.DockerProcess
 import com.cognifide.gradle.environment.docker.Stack
 import com.cognifide.gradle.environment.docker.StackException
 
 @Suppress("SpreadOperator")
 class Compose(environment: EnvironmentExtension) : Stack(environment) {
+
+    private val logger = environment.logger
 
     val initTimeout = common.obj.long {
         convention(30_000L)
@@ -35,13 +36,21 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
         true
     }
 
+    val processBuilder = common.obj.typed<ComposeProcessBuilder> {
+        convention(common.obj.provider { ComposeProcessBuilder.detect() })
+        common.prop.string("docker.compose.processBuilder")?.let { set(ComposeProcessBuilder.of(it)) }
+    }
+
+    fun processBuilder(name: String) {
+        processBuilder.set(ComposeProcessBuilder.of(name))
+    }
+
+    private fun process() = processBuilder.get().build()
+
     private fun initCompose() {
-        val result = DockerProcess.execQuietly {
-            withTimeoutMillis(initTimeout.get())
-            withArgs("compose", "version")
-        }
-        if (result.exitValue != 0) {
-            throw StackException("Failed to initialize Docker Compose. Is Docker running / installed? Error: '${result.errorString}'")
+        common.progress {
+            message = "Detecting Docker Compose command"
+            logger.info("Docker Compose command is '${process().commandLine.joinToString(" ")}'")
         }
     }
 
@@ -58,8 +67,8 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
             message = "Starting stack '${internalName.get()}'"
 
             try {
-                DockerProcess.exec {
-                    withArgs("compose", "-p", internalName.get(), "-f", composeFilePath, "up", "-d")
+                process().exec {
+                    withArgs("-p", internalName.get(), "-f", composeFilePath, "up", "-d")
                 }
             } catch (e: DockerException) {
                 throw StackException("Failed to deploy Docker Compose stack '${internalName.get()}'!", e)
@@ -85,9 +94,9 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
         common.progressIndicator {
             message = "Stopping stack '${internalName.get()}'"
 
-            val args = arrayOf("compose", "-p", internalName.get(), "-f", composeFilePath, "down")
+            val args = arrayOf("-p", internalName.get(), "-f", composeFilePath, "down")
             try {
-                DockerProcess.exec { withArgs(*args) }
+                process().exec { withArgs(*args) }
             } catch (e: DockerException) {
                 throw StackException("Failed to remove Docker Compose stack '${internalName.get()}'!", e)
             }
@@ -109,10 +118,10 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
     override fun troubleshoot(): List<String> = mutableListOf<String>().apply {
         add("Consider troubleshooting:")
 
-        val psArgs = arrayOf("compose", "-p", internalName.get(), "ps")
+        val psArgs = arrayOf("-p", internalName.get(), "ps")
         try {
             val out = try {
-                DockerProcess.execString { withArgs(*psArgs) }
+                process().execString { withArgs(*psArgs) }
             } catch (e: Exception) {
                 throw StackException("Cannot list processes in Docker Compose stack named '${internalName.get()}'!", e)
             }

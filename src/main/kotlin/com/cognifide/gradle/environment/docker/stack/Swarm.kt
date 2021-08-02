@@ -37,7 +37,7 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
     }
 
     private fun initSwarm() {
-        val result = DockerProcess.execQuietly {
+        val result = DockerProcess().execQuietly {
             withTimeoutMillis(initTimeout.get())
             withArgs("swarm", "init")
 
@@ -63,7 +63,7 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
             message = "Starting stack '${internalName.get()}'"
 
             try {
-                DockerProcess.exec {
+                DockerProcess().exec {
                     withArgs("stack", "deploy", "-c", composeFilePath, internalName.get(), "--with-registry-auth", "--resolve-image=always")
                 }
             } catch (e: DockerException) {
@@ -92,7 +92,7 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
 
             val args = arrayOf("stack", "rm", internalName.get())
             try {
-                DockerProcess.exec { withArgs(*args) }
+                DockerProcess().exec { withArgs(*args) }
             } catch (e: DockerException) {
                 throw StackException("Failed to remove Docker Swarm stack '${internalName.get()}'!", e)
             }
@@ -117,7 +117,7 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
         val psArgs = arrayOf("stack", "ps", internalName.get(), "--no-trunc")
         try {
             val out = try {
-                DockerProcess.execString { withArgs(*psArgs) }
+                DockerProcess().execString { withArgs(*psArgs) }
             } catch (e: Exception) {
                 throw StackException("Cannot list processes in Docker Swarm stack named '${internalName.get()}'!", e)
             }

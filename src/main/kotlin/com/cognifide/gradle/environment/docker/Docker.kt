@@ -200,13 +200,13 @@ class Docker(val environment: EnvironmentExtension) {
 
     private fun runInternal(spec: DockerRunSpec): DockerResult {
         logger.info("Running Docker command: ${spec.command.get().ifBlank { "<image_default>" }}")
-        return DockerProcess.execSpec(spec)
+        return DockerProcess().execSpec(spec)
     }
 
     @Suppress("TooGenericExceptionCaught")
     fun pull(image: String) {
         try {
-            DockerProcess.exec {
+            DockerProcess().exec {
                 withArgs("pull", image)
                 withOutputStream(SafeStreams.systemOut())
                 withErrorStream(SafeStreams.systemErr())
@@ -231,7 +231,7 @@ class Docker(val environment: EnvironmentExtension) {
         val operation = spec.operation.get()
         if (spec.stopPrevious.get()) {
             logger.info("Stopping previous Docker daemon \"$operation\"")
-            DockerProcess.execQuietly { withArgs("kill", spec.name.get()) }
+            DockerProcess().execQuietly { withArgs("kill", spec.name.get()) }
         }
 
         val outFile = spec.outputFile.get().asFile.apply { parentFile.mkdirs() }
@@ -262,7 +262,7 @@ class Docker(val environment: EnvironmentExtension) {
         }
 
         logger.info("Stopping current Docker daemon \"$operation\"")
-        DockerProcess.execQuietly { withArgs("kill", spec.name.get()) }
+        DockerProcess().execQuietly { withArgs("kill", spec.name.get()) }
         runJob.cancelAndJoin()
 
         logger.lifecycle("Stopped Docker daemon \"$operation\"")
