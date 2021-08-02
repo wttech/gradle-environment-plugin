@@ -11,7 +11,7 @@ abstract class Base(protected val environment: EnvironmentExtension) : Runtime {
 
     @Suppress("SpreadOperator", "TooGenericExceptionCaught")
     protected fun detectHostInternalIp(): String? = try {
-        DockerProcess.execString {
+        DockerProcess().execString {
             val args = listOf("run", "alpine", "/bin/ash", "-c", "ip -4 route list match 0/0 | cut -d ' ' -f 3")
             withArgs(*args.toTypedArray())
         }.takeIf { it.isNotBlank() }

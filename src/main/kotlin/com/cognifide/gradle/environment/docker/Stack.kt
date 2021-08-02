@@ -32,7 +32,7 @@ abstract class Stack(val environment: EnvironmentExtension) {
 
     val networkAvailable: Boolean
         get() {
-            val result = DockerProcess.execQuietly {
+            val result = DockerProcess().execQuietly {
                 withTimeoutMillis(networkTimeout.get())
                 withArgs("network", "inspect", networkName.get())
             }

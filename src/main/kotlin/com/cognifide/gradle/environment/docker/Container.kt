@@ -67,7 +67,7 @@ class Container(val manager: ContainerManager, val name: String) {
             try {
                 logger.debug("Determining ID for Docker container '$internalName'")
 
-                val containerId = DockerProcess.execString {
+                val containerId = DockerProcess().execString {
                     withArgs("ps", "-l", "-q", "-f", "name=$internalName")
                     withTimeoutMillis(runningTimeout)
                 }
@@ -91,7 +91,7 @@ class Container(val manager: ContainerManager, val name: String) {
             return try {
                 logger.debug("Checking running state of Docker container '$name'")
 
-                DockerProcess.execString {
+                DockerProcess().execString {
                     withArgs("inspect", "-f", "{{.State.Running}}", currentId)
                     withTimeoutMillis(runningTimeout)
                 }.toBoolean()
@@ -284,7 +284,7 @@ class Container(val manager: ContainerManager, val name: String) {
             throw ContainerException("Cannot exec command '${spec.command.get()}' since Docker container '$name' is not running!")
         }
         logger.info("Executing command '${spec.command.get()}' for Docker container '$name'")
-        return DockerProcess.execSpec(spec)
+        return DockerProcess().execSpec(spec)
     }
 
     private fun isLockRequired(name: String) = lockRequired.contains(name)
