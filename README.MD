@@ -66,7 +66,7 @@ As a consequence, if project is located outside of *C:/Users* directory, there i
 
 ### Docker compose file
 
-To configure containers to be deployed using Docker Swarm, simply create standard Docker Compose file but with templating (file at path *src/environment/docker-compose.yml.peb*)
+To configure containers to be deployed using Docker Compose (by default) or Swarm, simply create standard Docker Compose file but with templating (file at path *src/environment/docker-compose.yml.peb*)
 
 ```pebble
 version: "3"
