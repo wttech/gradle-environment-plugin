@@ -26,7 +26,7 @@
 Provides seamless Gradle integration with Docker & Compose/Swarm. Hides many OS-specific glitches from unexperienced Docker users.
 
 Controls virtualized environment consisting of any Docker-compatible software (e.g Apache Web Server (HTTPD), SQL/noSQL databases).
-Such software is deployed as [Docker Containers](https://www.docker.com/resources/what-container) orchestrated by [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
+Such software is deployed as [Docker Containers](https://www.docker.com/resources/what-container) orchestrated by [Compose](https://docs.docker.com/compose/) or [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
 
 Provides environment related tasks: `environmentUp`, `environmentDev`, `environmentHosts` etc.
 
@@ -81,14 +81,14 @@ services:
     networks:
       - docker-net
     volumes:
-      - "{{ docker.rootPath }}/env/src/environment/httpd/conf/httpd.conf:/etc/httpd/conf/httpd.conf"
-      - "{{ docker.rootPath }}/app/aem/dispatcher/src/conf.d:/etc/httpd/conf.d"
-      - "{{ docker.rootPath }}/app/aem/dispatcher/src/conf.dispatcher.d:/etc/httpd/conf.dispatcher.d"
-      - "{{ docker.workPath }}/httpd/modules/mod_dispatcher.so:/etc/httpd/modules/mod_dispatcher.so"
-      - "{{ docker.workPath }}/httpd/logs:/etc/httpd/logs"
+      - "{{ rootPath }}/env/src/environment/httpd/conf/httpd.conf:/etc/httpd/conf/httpd.conf"
+      - "{{ rootPath }}/app/aem/dispatcher/src/conf.d:/etc/httpd/conf.d"
+      - "{{ rootPath }}/app/aem/dispatcher/src/conf.dispatcher.d:/etc/httpd/conf.dispatcher.d"
+      - "{{ workPath }}/httpd/modules/mod_dispatcher.so:/etc/httpd/modules/mod_dispatcher.so"
+      - "{{ workPath }}/httpd/logs:/etc/httpd/logs"
       {% if docker.runtime.safeVolumes %}
-      - "{{ docker.workPath }}/httpd/cache:/var/www/localhost/cache"
-      - "{{ docker.workPath }}/httpd/htdocs:/var/www/localhost/htdocs"
+      - "{{ workPath }}/httpd/cache:/var/www/localhost/cache"
+      - "{{ workPath }}/httpd/htdocs:/var/www/localhost/htdocs"
       {% endif %}
     {% if docker.runtime.hostInternalIpMissing %}
     extra_hosts:
@@ -138,7 +138,7 @@ environment { // config for AEM environment running on Docker
                     execShell("Restarting HTTPD server", "/usr/local/apache2/bin/httpd -k restart")
                 }
                 dev {
-                    watchConfigDir("conf")
+                    watchSourceDir("conf")
                 }
             }
         }                        
