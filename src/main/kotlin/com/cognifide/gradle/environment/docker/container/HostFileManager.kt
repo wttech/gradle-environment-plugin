@@ -16,13 +16,13 @@ class HostFileManager(val container: Container) {
 
     private val docker = container.docker
 
-    val rootDir = common.obj.relativeDir(docker.environment.rootDir, container.name)
+    val workDir = common.obj.relativeDir(docker.environment.rootDir, container.name)
 
-    fun file(path: String) = rootDir.get().asFile.resolve(path)
+    fun workFile(path: String) = workDir.get().asFile.resolve(path)
 
-    val configDir = common.obj.relativeDir(docker.environment.sourceDir, container.name)
+    val sourceDir = common.obj.relativeDir(docker.environment.sourceDir, container.name)
 
-    fun configFile(path: String) = configDir.get().asFile.resolve(path)
+    fun sourceFile(path: String) = sourceDir.get().asFile.resolve(path)
 
     private var fileResolverOptions: FileResolver.() -> Unit = {
         downloadDir.convention(docker.environment.buildDir.dir("host"))
@@ -46,7 +46,7 @@ class HostFileManager(val container: Container) {
                 ?.takeIf { it.isNotBlank() }
                 ?.let { ensureDir(it) }
 
-        file(path).apply {
+        workFile(path).apply {
             if (!exists()) {
                 logger.info("Ensuring file '$this' for container '${container.name}'")
                 writeText(content)
@@ -55,15 +55,15 @@ class HostFileManager(val container: Container) {
     }
 
     fun ensureDir() {
-        rootDir.get().asFile.apply {
-            logger.info("Ensuring root directory '$this' for container '${container.name}'")
+        workDir.get().asFile.apply {
+            logger.info("Ensuring work directory '$this' for container '${container.name}'")
             mkdirs()
         }
     }
 
     fun ensureDir(vararg paths: String) {
         paths.forEach { path ->
-            file(path).apply {
+            workFile(path).apply {
                 logger.info("Ensuring directory '$this' for container '${container.name}'")
                 mkdirs()
             }
@@ -71,7 +71,7 @@ class HostFileManager(val container: Container) {
     }
 
     fun cleanDir(vararg paths: String) = paths.forEach { path ->
-        file(path).apply {
+        workFile(path).apply {
             logger.info("Cleaning directory '$this' for container '${container.name}'")
             deleteRecursively(); mkdirs()
         }

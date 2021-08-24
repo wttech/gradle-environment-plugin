@@ -10,8 +10,8 @@ class DevOptions(val container: Container) {
         watchDirs.from(paths)
     }
 
-    fun watchConfigDir(vararg paths: String) = paths.forEach {
-        watchDir(container.host.configDir.dir(it))
+    fun watchSourceDir(vararg paths: String) = paths.forEach {
+        watchDir(container.host.sourceDir.dir(it))
     }
 
     fun watchRootDir(vararg paths: String) = paths.forEach {
