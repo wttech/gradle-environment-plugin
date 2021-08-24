@@ -1,7 +1,5 @@
 [![WTT logo](docs/wtt-logo.png)](https://www.wundermanthompson.com)
 
-[![Download](https://api.bintray.com/packages/cognifide/maven-public/gradle-environment-plugin/images/download.svg) ](https://bintray.com/cognifide/maven-public/gradle-environment-plugin/_latestVersion)
-[![Build Status](https://dev.azure.com/gradle-aem/gradle-environment-plugin/_apis/build/status/Cognifide.gradle-environment-plugin?branchName=master)](https://dev.azure.com/gradle-aem/gradle-environment-plugin/_build/latest?definitionId=9&branchName=master)[![Gradle Status](https://gradleupdate.appspot.com/wttech/gradle-environment-plugin/status.svg)](https://gradleupdate.appspot.com/wttech/gradle-environment-plugin/status)
 [![Apache License, Version 2.0, January 2004](docs/apache-license-badge.svg)](http://www.apache.org/licenses/)
 
 # Gradle Environment Plugin
