@@ -74,12 +74,8 @@ services:
   httpd:
     image: centos/httpd:latest
     command: ["tail", "-f", "--retry", "/usr/local/apache2/logs/error.log"]
-    deploy:
-      replicas: 1
     ports:
       - "80:80"
-    networks:
-      - docker-net
     volumes:
       - "{{ rootPath }}/env/src/environment/httpd/conf/httpd.conf:/etc/httpd/conf/httpd.conf"
       - "{{ rootPath }}/app/aem/dispatcher/src/conf.d:/etc/httpd/conf.d"
@@ -94,8 +90,6 @@ services:
     extra_hosts:
       - "host.docker.internal:{{ docker.runtime.hostInternalIp }}"
     {% endif %}
-networks:
-  docker-net:
 ```
 
 Docker has differences in case of how it works on different operating systems. While using templating and [variables](src/main/kotlin/com/cognifide/gradle/environment/docker/Docker.kt#L46) in that file, Gradle Environment Plugin tries to mitigate these differences, to make your build working smoothly on all OSes and hide glitches from unexperienced Docker users. For example, when using Docker Toolbox, paths should be absolute and having Unix separators despite that host OS is Windows.
