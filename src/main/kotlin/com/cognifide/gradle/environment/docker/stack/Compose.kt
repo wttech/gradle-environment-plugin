@@ -60,6 +60,11 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
 
     var deployRetry = common.retry { afterSecond(common.prop.long("docker.compose.deployRetry") ?: 30) }
 
+    val deployArgs = common.obj.strings {
+        convention(listOf("--remove-orphans"))
+        common.prop.list("docker.compose.deployArgs")?.let { set(it) }
+    }
+
     override fun deploy() {
         init()
 
@@ -68,7 +73,7 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
 
             try {
                 process().exec {
-                    withArgs("-p", internalName.get(), "-f", composeFilePath, "up", "-d")
+                    withArgs("-p", internalName.get(), "-f", composeFilePath, "up", "-d", *deployArgs.get().toTypedArray())
                 }
             } catch (e: DockerException) {
                 throw StackException("Failed to deploy Docker Compose stack '${internalName.get()}'!", e)
@@ -88,13 +93,18 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
 
     var undeployRetry = common.retry { afterSecond(common.prop.long("docker.compose.undeployRetry") ?: 30) }
 
+    val undeployArgs = common.obj.strings {
+        convention(listOf("--remove-orphans"))
+        common.prop.list("docker.compose.undeployArgs")?.let { set(it) }
+    }
+
     override fun undeploy() {
         init()
 
         common.progressIndicator {
             message = "Stopping stack '${internalName.get()}'"
 
-            val args = arrayOf("-p", internalName.get(), "-f", composeFilePath, "down")
+            val args = arrayOf("-p", internalName.get(), "-f", composeFilePath, "down", *undeployArgs.get().toTypedArray())
             try {
                 process().exec { withArgs(*args) }
             } catch (e: DockerException) {

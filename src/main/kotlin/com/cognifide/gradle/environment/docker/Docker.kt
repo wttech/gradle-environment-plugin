@@ -6,6 +6,7 @@ import com.cognifide.gradle.environment.EnvironmentExtension
 import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.process.internal.streams.SafeStreams
+import java.io.File
 import java.io.FileOutputStream
 
 class Docker(val environment: EnvironmentExtension) {
@@ -266,5 +267,19 @@ class Docker(val environment: EnvironmentExtension) {
         runJob.cancelAndJoin()
 
         logger.lifecycle("Stopped Docker daemon \"$operation\"")
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    fun load(file: File): String {
+        val output = DockerProcess().execString {
+            withArgs("load", "--input", file.absolutePath)
+        }
+        return output.lineSequence().firstOrNull { it.startsWith("Loaded image:") }
+            ?.substringAfter(":")?.trim()
+            ?: throw DockerException("Cannot determine loaded Docker image name from output:\n$output\n")
+    }
+
+    fun load(composePropertyName: String, file: File) {
+        composeProperties.putAll(common.project.provider { mapOf(composePropertyName to load(file)) })
     }
 }
