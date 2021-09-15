@@ -38,6 +38,7 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
 
     val processBuilder = common.obj.typed<ComposeProcessBuilder> {
         convention(common.obj.provider { ComposeProcessBuilder.detect() })
+        finalizeValueOnRead()
         common.prop.string("docker.compose.processBuilder")?.let { set(ComposeProcessBuilder.of(it)) }
     }
 
@@ -128,18 +129,31 @@ class Compose(environment: EnvironmentExtension) : Stack(environment) {
     override fun troubleshoot(): List<String> = mutableListOf<String>().apply {
         add("Consider troubleshooting:")
 
+        val process = process()
         val psArgs = arrayOf("-p", internalName.get(), "ps")
+        val logsArgs = arrayOf("-p", internalName.get(), "logs")
+
         try {
-            val out = try {
+            add("* restarting Docker")
+
+            val psOut = try {
                 process().execString { withArgs(*psArgs) }
             } catch (e: Exception) {
                 throw StackException("Cannot list processes in Docker Compose stack named '${internalName.get()}'!", e)
             }
-            add("* restarting Docker")
-            add("* using output of command: 'docker ${psArgs.joinToString(" ")}':\n")
-            add(out)
+            add("* using output of command: '${(process.commandLine + psArgs).joinToString(" ")}':\n")
+            add(psOut + "\n")
+
+            val logsOut = try {
+                process().execString { withArgs(*logsArgs) }
+            } catch (e: Exception) {
+                throw StackException("Cannot print logs from Docker Compose stack named '${internalName.get()}'!", e)
+            }
+            add("* using output of command: '${(process.commandLine + logsArgs).joinToString(" ")}':\n")
+            add(logsOut + "\n")
         } catch (e: Exception) {
-            add("* using command: 'docker ${psArgs.joinToString(" ")}'")
+            add("* using command: '${(process.commandLine + psArgs).joinToString(" ")}'")
+            add("* using command: '${(process.commandLine + logsArgs).joinToString(" ")}'")
             add("* restarting Docker")
         }
     }

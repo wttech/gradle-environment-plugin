@@ -5,6 +5,7 @@ import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.EnvironmentExtension
 import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
+import org.gradle.api.provider.Provider
 import org.gradle.process.internal.streams.SafeStreams
 import java.io.File
 import java.io.FileOutputStream
@@ -279,7 +280,9 @@ class Docker(val environment: EnvironmentExtension) {
             ?: throw DockerException("Cannot determine loaded Docker image name from output:\n$output\n")
     }
 
-    fun load(composePropertyName: String, file: File) {
-        composeProperties.putAll(common.project.provider { mapOf(composePropertyName to load(file)) })
+    fun load(composePropertyName: String, fileProvider: () -> File) = load(composePropertyName, common.project.provider { fileProvider() })
+
+    fun load(composePropertyName: String, fileProvider: Provider<File>) {
+        composeProperties.putAll(common.project.provider { mapOf(composePropertyName to load(fileProvider.get()))})
     }
 }
