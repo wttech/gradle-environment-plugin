@@ -283,6 +283,6 @@ class Docker(val environment: EnvironmentExtension) {
     fun load(composePropertyName: String, fileProvider: () -> File) = load(composePropertyName, common.project.provider { fileProvider() })
 
     fun load(composePropertyName: String, fileProvider: Provider<File>) {
-        composeProperties.putAll(common.project.provider { mapOf(composePropertyName to load(fileProvider.get()))})
+        composeProperties.putAll(common.project.provider { mapOf(composePropertyName to load(fileProvider.get())) })
     }
 }
