@@ -85,6 +85,10 @@ class Docker(val environment: EnvironmentExtension) {
 
     fun init() {
         registry.loginAuto()
+        resolve()
+    }
+
+    fun resolve() {
         generateComposeFile()
         containers.resolve()
     }
