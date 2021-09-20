@@ -23,9 +23,9 @@ open class EnvironmentExtension(val project: Project) : Serializable {
     /**
      * Path in which local environment will be stored.
      */
-    val rootDir = obj.dir {
+    val workDir = obj.dir {
         convention(obj.projectDir(".gradle/environment"))
-        prop.file("environment.rootDir")?.let { set(it) }
+        prop.file("environment.workDir")?.let { set(it) }
     }
 
     /**
@@ -65,7 +65,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     val hosts by lazy { HostOptions(this) }
 
-    val created: Boolean get() = rootDir.get().asFile.exists()
+    val created: Boolean get() = workDir.get().asFile.exists()
 
     val running: Boolean get() = docker.running
 
@@ -109,7 +109,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
     fun destroy() {
         logger.info("Destroying: $this")
-        rootDir.get().asFile.deleteRecursively()
+        workDir.get().asFile.deleteRecursively()
         logger.info("Destroyed: $this")
     }
 
@@ -136,7 +136,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         logger.info("Reloaded $this")
     }
 
-    override fun toString(): String = "Environment(root=${rootDir.get()}, up=$up)"
+    override fun toString(): String = "Environment(workDir=${workDir.get()}, up=$up)"
 
     companion object {
         const val NAME = "environment"

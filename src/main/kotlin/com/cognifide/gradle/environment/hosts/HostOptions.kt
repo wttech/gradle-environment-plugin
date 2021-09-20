@@ -53,7 +53,7 @@ class HostOptions(private val environment: EnvironmentExtension) : Serializable 
 
     val updater by lazy {
         HostUpdater(common).apply {
-            workDir.convention(environment.rootDir.dir("hosts"))
+            workDir.convention(environment.workDir.dir("hosts"))
             section.convention(environment.docker.stack.internalName)
         }
     }

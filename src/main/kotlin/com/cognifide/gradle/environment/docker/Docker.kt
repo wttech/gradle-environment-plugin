@@ -67,7 +67,7 @@ class Docker(val environment: EnvironmentExtension) {
      */
     fun registry(options: DockerRegistry.() -> Unit) = registry.using(options)
 
-    val composeFile = common.obj.relativeFile(environment.rootDir, "docker-compose.yml")
+    val composeFile = common.obj.relativeFile(environment.workDir, "docker-compose.yml")
 
     val composeTemplateFile = common.obj.relativeFile(environment.sourceDir, "docker-compose.yml.peb")
 
@@ -76,7 +76,7 @@ class Docker(val environment: EnvironmentExtension) {
             mapOf(
                 "sourcePath" to runtime.determinePath(environment.sourceDir.get().asFile),
                 "buildPath" to runtime.determinePath(environment.buildDir.get().asFile),
-                "workPath" to runtime.determinePath(environment.rootDir.get().asFile),
+                "workPath" to runtime.determinePath(environment.workDir.get().asFile),
                 "rootPath" to runtime.determinePath(environment.project.rootProject.projectDir),
                 "homePath" to runtime.determinePath(environment.project.file(System.getProperty("user.home")))
             )

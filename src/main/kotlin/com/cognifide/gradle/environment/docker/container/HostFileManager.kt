@@ -16,7 +16,7 @@ class HostFileManager(val container: Container) {
 
     private val docker = container.docker
 
-    val workDir = common.obj.relativeDir(docker.environment.rootDir, container.name)
+    val workDir = common.obj.relativeDir(docker.environment.workDir, container.name)
 
     fun workFile(path: String) = workDir.get().asFile.resolve(path)
 

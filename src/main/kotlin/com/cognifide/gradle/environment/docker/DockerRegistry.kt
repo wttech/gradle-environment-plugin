@@ -45,7 +45,7 @@ class DockerRegistry(private val docker: Docker) {
                     .ignoreExitStatus()
                     .run()
             } else {
-                val passwordFile = docker.environment.rootDir.file("docker-registry-pwd.txt").get().asFile.apply {
+                val passwordFile = docker.environment.workDir.file("docker-registry-pwd.txt").get().asFile.apply {
                     parentFile.mkdirs()
                     writeText(password.orNull.orEmpty())
                 }
