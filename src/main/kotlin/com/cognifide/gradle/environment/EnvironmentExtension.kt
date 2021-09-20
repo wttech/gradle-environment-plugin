@@ -28,11 +28,15 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         prop.file("environment.workDir")?.let { set(it) }
     }
 
+    fun workFile(path: String) = workDir.get().asFile.resolve(path)
+
     /**
      * Path for temporary files needed to set up environment like:
      * generated SSL certificates, unpacked archive contents, etc.
      */
     val buildDir = obj.buildDir("environment")
+
+    fun buildFile(path: String) = buildDir.get().asFile.resolve(path)
 
     /**
      * Convention directory for storing environment specific configuration files.
@@ -41,6 +45,8 @@ open class EnvironmentExtension(val project: Project) : Serializable {
         convention(obj.projectDir("src/environment"))
         prop.file("environment.sourceDir")?.let { set(it) }
     }
+
+    fun sourceFile(path: String) = sourceDir.get().asFile.resolve(path)
 
     /**
      * Configures Docker related options.
