@@ -20,7 +20,12 @@ class Container(val manager: ContainerManager, val name: String) {
 
     private val logger = common.logger
 
-    val internalName get() = "${docker.stack.internalName.get()}_$name"
+    val internalNameSeparators = common.obj.strings {
+        convention(listOf("-", "_"))
+        common.prop.list("docker.container.internalNameSeparators")?.let { set(it) }
+    }
+
+    val internalNames get() = internalNameSeparators.map { s -> "${docker.stack.internalName.get()}${s}$name" }
 
     val host = HostFileManager(this)
 
@@ -60,26 +65,22 @@ class Container(val manager: ContainerManager, val name: String) {
         devOptions.apply(options)
     }
 
-    var runningTimeout = common.prop.long("environment.docker.container.runningTimeout") ?: 30_000L
+    val runningTimeout = common.obj.long {
+        convention(30_000L)
+        common.prop.long("docker.container.runningTimeout")?.let { set(it) }
+    }
 
     val id: String?
-        get() {
-            try {
-                logger.debug("Determining ID for Docker container '$internalName'")
-
-                val containerId = DockerProcess().execString {
+        get() = try {
+            logger.debug("Determining ID for Docker container '$name'")
+            internalNames.get().asSequence().mapNotNull { internalName ->
+                DockerProcess().execString {
                     withArgs("ps", "-l", "-q", "-f", "name=$internalName")
-                    withTimeoutMillis(runningTimeout)
-                }
-
-                return if (containerId.isBlank()) {
-                    null
-                } else {
-                    containerId
-                }
-            } catch (e: DockerException) {
-                throw ContainerException("Failed to load Docker container ID for name '$internalName'!", e)
-            }
+                    withTimeoutMillis(runningTimeout.get())
+                }.takeIf { it.isNotBlank() }
+            }.firstOrNull()
+        } catch (e: DockerException) {
+            throw ContainerException("Failed to find Docker container ID by name '$name'!", e)
         }
 
     val composeDefined: Boolean get() = manager.composeNames.contains(name)
@@ -93,7 +94,7 @@ class Container(val manager: ContainerManager, val name: String) {
 
                 DockerProcess().execString {
                     withArgs("inspect", "-f", "{{.State.Running}}", currentId)
-                    withTimeoutMillis(runningTimeout)
+                    withTimeoutMillis(runningTimeout.get())
                 }.toBoolean()
             } catch (e: DockerException) {
                 throw ContainerException("Failed to check Docker container '$name' state!", e)
@@ -105,7 +106,7 @@ class Container(val manager: ContainerManager, val name: String) {
     private val lockRequired = mutableSetOf<String>()
 
     var awaitRetry = common.retry {
-        afterSecond(this@Container.common.prop.long("environment.docker.container.awaitRetry") ?: 180)
+        afterSecond(this@Container.common.prop.long("docker.container.awaitRetry") ?: 180)
     }
 
     @Suppress("TooGenericExceptionCaught")
