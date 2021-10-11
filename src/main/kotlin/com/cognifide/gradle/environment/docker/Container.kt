@@ -25,7 +25,7 @@ class Container(val manager: ContainerManager, val name: String) {
         common.prop.list("docker.container.internalNameSeparators")?.let { set(it) }
     }
 
-    val internalNames get() = internalNameSeparators.map { s -> "${docker.stack.internalName.get()}${s}$name" }
+    val internalNames get() = internalNameSeparators.get().map { s -> "${docker.stack.internalName.get()}${s}$name" }
 
     val host = HostFileManager(this)
 
@@ -73,7 +73,7 @@ class Container(val manager: ContainerManager, val name: String) {
     val id: String?
         get() = try {
             logger.debug("Determining ID for Docker container '$name'")
-            internalNames.get().asSequence().mapNotNull { internalName ->
+            internalNames.asSequence().mapNotNull { internalName ->
                 DockerProcess().execString {
                     withArgs("ps", "-l", "-q", "-f", "name=$internalName")
                     withTimeoutMillis(runningTimeout.get())
