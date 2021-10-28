@@ -29,8 +29,6 @@ Controls virtualized environment consisting of any Docker-compatible software (e
 Such software is deployed as [Docker Containers](https://www.docker.com/resources/what-container) orchestrated by [Compose](https://docs.docker.com/compose/) or [Swarm](https://docs.docker.com/engine/swarm/). This solution is cross-platform just like Docker.
 
 Provides environment related tasks: `environmentUp`, `environmentDev`, `environmentHosts` etc.
-
-Should be applied only at root project / only once within whole build.
     
 ## Setup
 
