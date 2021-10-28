@@ -142,6 +142,11 @@ gradlePlugin {
             displayName = "Environment Plugin"
             description = "Provides seamless Gradle integration with Docker & Swarm."
         }
+        create("common") {
+            id = "com.cognifide.environment.common"
+            implementationClass = "com.cognifide.gradle.environment.EnvironmentCommonPlugin"
+            displayName = "Environment Common Plugin"
+        }
     }
 }
 

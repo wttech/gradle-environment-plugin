@@ -11,16 +11,12 @@ class EnvironmentPlugin : CommonDefaultPlugin() {
 
     override fun Project.configureProject() {
         setupDependentPlugins()
-        setupExtension()
         setupTasks()
     }
 
     private fun Project.setupDependentPlugins() {
+        plugins.apply(EnvironmentCommonPlugin::class.java)
         plugins.apply(RuntimePlugin::class.java)
-    }
-
-    private fun Project.setupExtension() {
-        extensions.create(EnvironmentExtension.NAME, EnvironmentExtension::class.java, this)
     }
 
     private fun Project.setupTasks() = tasks {
