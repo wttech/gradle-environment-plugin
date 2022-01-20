@@ -40,6 +40,8 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
 
     val detached = environment.obj.boolean { convention(false) }
 
+    private val imageOrFail get() = image.orNull ?: throw DockerException("Docker run image is not specified!")
+
     init {
         systemOut()
         commandLine.set(environment.obj.provider {
@@ -52,14 +54,14 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
                 } + options.get()).toSet())
                 addAll(volumes.get().map { (localPath, containerPath) -> "-v=${runtime.determinePath(localPath)}:$containerPath" })
                 addAll(ports.get().map { (hostPort, containerPort) -> "-p=$hostPort:$containerPort" })
-                add(image.orNull ?: throw DockerException("Docker run image is not specified!"))
+                add(imageOrFail)
                 addAll(args.get())
             }
         })
         operation.set(environment.obj.provider {
             when {
-                command.orNull.isNullOrBlank() -> "Running image '${image.get()}'"
-                else -> "Running image '${image.get()}' with command '${command.get()}'"
+                command.orNull.isNullOrBlank() -> "Running image '${imageOrFail}'"
+                else -> "Running image '${imageOrFail}' with command '${command.get()}'"
             }
         })
     }
