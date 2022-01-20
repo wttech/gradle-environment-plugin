@@ -47,11 +47,10 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
         commandLine.set(environment.obj.provider {
             mutableListOf<String>().apply {
                 add("run")
-                addAll((mutableListOf<String>().apply {
-                    name.orNull?.let { addAll(listOf("--name", it)) }
-                    if (autoRemove.get()) add("--rm")
-                    if (detached.get()) add("-d")
-                } + options.get()).toSet())
+                name.orNull?.let { addAll(listOf("--name", it)) }
+                if (autoRemove.get() && !options.get().contains("--rm")) add("--rm")
+                if (detached.get() && !options.get().contains("-d")) add("-d")
+                addAll(options.get())
                 addAll(volumes.get().map { (localPath, containerPath) -> "-v=${runtime.determinePath(localPath)}:$containerPath" })
                 addAll(ports.get().map { (hostPort, containerPort) -> "-p=$hostPort:$containerPort" })
                 add(imageOrFail)
