@@ -60,8 +60,8 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
         })
         operation.set(environment.obj.provider {
             when {
-                command.orNull.isNullOrBlank() -> "Running image '${imageOrFail}'"
-                else -> "Running image '${imageOrFail}' with command '${command.get()}'"
+                command.orNull.isNullOrBlank() -> "Running image '$imageOrFail'"
+                else -> "Running image '$imageOrFail' with command '${command.get()}'"
             }
         })
     }
