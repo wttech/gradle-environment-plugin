@@ -7,8 +7,10 @@ import kotlinx.coroutines.*
 import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.api.provider.Provider
 import org.gradle.process.internal.streams.SafeStreams
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.charset.StandardCharsets
 
 class Docker(val environment: EnvironmentExtension) {
 
@@ -156,6 +158,17 @@ class Docker(val environment: EnvironmentExtension) {
     }
 
     fun run(spec: DockerRunSpec.() -> Unit) = runInteractive(spec)
+
+    fun runAsStream(spec: DockerRunSpec.() -> Unit) = ByteArrayOutputStream().also { out ->
+        run {
+            nullOut()
+            output.set(out)
+            spec()
+        }
+        return out
+    }
+
+    fun runAsString(spec: DockerRunSpec.() -> Unit) = String(runAsStream(spec).toByteArray(), StandardCharsets.UTF_8)
 
     fun run(image: String, args: List<String>, exitCode: Int = 0) = run {
         this.image.set(image)
