@@ -51,8 +51,8 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
                 if (autoRemove.get() && !options.get().contains("--rm")) add("--rm")
                 if (detached.get() && !options.get().contains("-d")) add("-d")
                 addAll(options.get())
-                addAll(volumes.get().map { (localPath, containerPath) -> "-v=${runtime.determinePath(localPath)}:$containerPath" })
-                addAll(ports.get().map { (hostPort, containerPort) -> "-p=$hostPort:$containerPort" })
+                addAll(volumes.get().flatMap { (localPath, containerPath) -> listOf("-v", "${runtime.determinePath(localPath)}:$containerPath") })
+                addAll(ports.get().flatMap { (hostPort, containerPort) -> listOf("-p", "$hostPort:$containerPort") })
                 add(imageOrFail)
                 addAll(args.get())
             }
