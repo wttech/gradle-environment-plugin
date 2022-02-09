@@ -10,6 +10,10 @@ class DevOptions(val container: Container) {
         watchDirs.from(paths)
     }
 
+    fun watchSourceDir() {
+        watchDir(container.host.sourceDir)
+    }
+
     fun watchSourceDir(vararg paths: String) = paths.forEach {
         watchDir(container.host.sourceDir.dir(it))
     }
