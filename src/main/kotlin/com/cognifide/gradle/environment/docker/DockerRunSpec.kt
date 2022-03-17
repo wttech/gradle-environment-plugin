@@ -44,25 +44,29 @@ open class DockerRunSpec(docker: Docker) : DockerInvokeSpec(docker) {
 
     init {
         systemOut()
-        commandLine.set(environment.obj.provider {
-            mutableListOf<String>().apply {
-                add("run")
-                name.orNull?.let { addAll(listOf("--name", it)) }
-                if (autoRemove.get() && !options.get().contains("--rm")) add("--rm")
-                if (detached.get() && !options.get().contains("-d")) add("-d")
-                addAll(options.get())
-                addAll(volumes.get().flatMap { (localPath, containerPath) -> listOf("-v", "${runtime.determinePath(localPath)}:$containerPath") })
-                addAll(ports.get().flatMap { (hostPort, containerPort) -> listOf("-p", "$hostPort:$containerPort") })
-                add(imageOrFail)
-                addAll(args.get())
+        commandLine.set(
+            environment.obj.provider {
+                mutableListOf<String>().apply {
+                    add("run")
+                    name.orNull?.let { addAll(listOf("--name", it)) }
+                    if (autoRemove.get() && !options.get().contains("--rm")) add("--rm")
+                    if (detached.get() && !options.get().contains("-d")) add("-d")
+                    addAll(options.get())
+                    addAll(volumes.get().flatMap { (localPath, containerPath) -> listOf("-v", "${runtime.determinePath(localPath)}:$containerPath") })
+                    addAll(ports.get().flatMap { (hostPort, containerPort) -> listOf("-p", "$hostPort:$containerPort") })
+                    add(imageOrFail)
+                    addAll(args.get())
+                }
             }
-        })
-        operation.set(environment.obj.provider {
-            val imageShort = imageOrFail.substringAfterLast("/")
-            when {
-                command.orNull.isNullOrBlank() -> "Running image '$imageShort'"
-                else -> "Running image '$imageShort' with command '${command.get()}'"
+        )
+        operation.set(
+            environment.obj.provider {
+                val imageShort = imageOrFail.substringAfterLast("/")
+                when {
+                    command.orNull.isNullOrBlank() -> "Running image '$imageShort'"
+                    else -> "Running image '$imageShort' with command '${command.get()}'"
+                }
             }
-        })
+        )
     }
 }

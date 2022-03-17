@@ -52,7 +52,7 @@ class ContainerManager(val docker: Docker) {
      * Get defined container by name.
      */
     fun named(name: String): Container = all.firstOrNull { it.name == name }
-            ?: throw DockerException("Container named '$name' is not defined!")
+        ?: throw DockerException("Container named '$name' is not defined!")
 
     /**
      * Get defined container by name.

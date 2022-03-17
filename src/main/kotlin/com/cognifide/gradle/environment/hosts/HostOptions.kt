@@ -43,7 +43,7 @@ class HostOptions(private val environment: EnvironmentExtension) : Serializable 
     fun get(vararg tags: String) = get(tags.asIterable())
 
     fun get(tags: Iterable<String>) = find(tags)
-            ?: throw EnvironmentException("Environment has no host tagged with '${tags.joinToString(",")}'!")
+        ?: throw EnvironmentException("Environment has no host tagged with '${tags.joinToString(",")}'!")
 
     fun all(vararg tags: String) = all(tags.asIterable())
 

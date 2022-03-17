@@ -13,10 +13,12 @@ open class EnvironmentUp : EnvironmentDefaultTask() {
     fun up() {
         if (environment.up) {
             if (!environment.upToDate) {
-                logger.lifecycle(listOf(
-                    "Turning down the environment as it is not up-to-date!",
-                    "Compose file needs update: ${environment.docker.composeFile.get().asFile}"
-                ).joinToString("\n"))
+                logger.lifecycle(
+                    listOf(
+                        "Turning down the environment as it is not up-to-date!",
+                        "Compose file needs update: ${environment.docker.composeFile.get().asFile}"
+                    ).joinToString("\n")
+                )
                 environment.down()
             } else {
                 logger.lifecycle("Skipping turning on the environment as it is already up-to-date!")

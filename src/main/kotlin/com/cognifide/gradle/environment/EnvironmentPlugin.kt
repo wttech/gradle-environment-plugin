@@ -2,9 +2,19 @@ package com.cognifide.gradle.environment
 
 import com.cognifide.gradle.common.CommonDefaultPlugin
 import com.cognifide.gradle.common.RuntimePlugin
-import com.cognifide.gradle.common.tasks.runtime.*
 import com.cognifide.gradle.common.checkForce
-import com.cognifide.gradle.environment.tasks.*
+import com.cognifide.gradle.common.tasks.runtime.*
+import com.cognifide.gradle.environment.tasks.EnvironmentAwait
+import com.cognifide.gradle.environment.tasks.EnvironmentDestroy
+import com.cognifide.gradle.environment.tasks.EnvironmentDev
+import com.cognifide.gradle.environment.tasks.EnvironmentDown
+import com.cognifide.gradle.environment.tasks.EnvironmentHosts
+import com.cognifide.gradle.environment.tasks.EnvironmentReload
+import com.cognifide.gradle.environment.tasks.EnvironmentResetup
+import com.cognifide.gradle.environment.tasks.EnvironmentResolve
+import com.cognifide.gradle.environment.tasks.EnvironmentRestart
+import com.cognifide.gradle.environment.tasks.EnvironmentSetup
+import com.cognifide.gradle.environment.tasks.EnvironmentUp
 import org.gradle.api.Project
 
 class EnvironmentPlugin : CommonDefaultPlugin() {

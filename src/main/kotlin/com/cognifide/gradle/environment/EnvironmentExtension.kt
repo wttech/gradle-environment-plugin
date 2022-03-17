@@ -149,7 +149,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
         fun of(project: Project): EnvironmentExtension {
             return project.extensions.findByType(EnvironmentExtension::class.java)
-                    ?: throw EnvironmentException("${project.displayName.capitalize()} must have plugin applied: ${EnvironmentPlugin.ID}")
+                ?: throw EnvironmentException("${project.displayName.capitalize()} must have plugin applied: ${EnvironmentPlugin.ID}")
         }
     }
 }

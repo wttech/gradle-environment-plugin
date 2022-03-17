@@ -21,13 +21,15 @@ class DockerDaemonSpec(docker: Docker) : DockerRunSpec(docker) {
     init {
         nullOut()
         name.convention(id.map { "${docker.stack.internalName.get()}_$it" })
-        id.convention(image.map { imageName ->
-            val outputId = StringUtils.replaceEach(imageName, arrayOf("/", ":"), arrayOf(".", "."))
-            when {
-                idUnique.get() -> "$outputId.${idUnique()}"
-                else -> outputId
+        id.convention(
+            image.map { imageName ->
+                val outputId = StringUtils.replaceEach(imageName, arrayOf("/", ":"), arrayOf(".", "."))
+                when {
+                    idUnique.get() -> "$outputId.${idUnique()}"
+                    else -> outputId
+                }
             }
-        })
+        )
     }
 
     @Suppress("MagicNumber")
