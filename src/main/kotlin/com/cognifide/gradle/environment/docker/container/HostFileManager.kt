@@ -42,9 +42,9 @@ class HostFileManager(val container: Container) {
 
     fun ensureFile(vararg paths: String, content: String = "") = paths.forEach { path ->
         path.takeIf { it.contains("/") }
-                ?.substringBeforeLast("/")
-                ?.takeIf { it.isNotBlank() }
-                ?.let { ensureDir(it) }
+            ?.substringBeforeLast("/")
+            ?.takeIf { it.isNotBlank() }
+            ?.let { ensureDir(it) }
 
         workFile(path).apply {
             if (!exists()) {

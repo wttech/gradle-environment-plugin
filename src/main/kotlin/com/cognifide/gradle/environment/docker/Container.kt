@@ -215,9 +215,9 @@ class Container(val manager: ContainerManager, val name: String) {
 
     fun ensureFile(paths: Iterable<String>) {
         val dirPaths = paths.filter { it.contains("/") }
-                .map { it.substringBeforeLast("/") }
-                .filter { it.isNotBlank() }
-                .toSet()
+            .map { it.substringBeforeLast("/") }
+            .filter { it.isNotBlank() }
+            .toSet()
         ensureDir(dirPaths)
 
         val command = "touch ${paths.joinToString(" ")}"

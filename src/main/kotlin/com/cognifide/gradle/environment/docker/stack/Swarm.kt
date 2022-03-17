@@ -101,8 +101,10 @@ class Swarm(environment: EnvironmentExtension) : Stack(environment) {
             Behaviors.waitUntil(undeployRetry.delay) { timer ->
                 val running = networkAvailable
                 if (timer.ticks == undeployRetry.times && running) {
-                    throw StackException("Failed to stop Docker Swarm stack named '${internalName.get()}'!" +
-                            " Try to stop manually using Docker command: 'docker ${args.joinToString(" ")}}'")
+                    throw StackException(
+                        "Failed to stop Docker Swarm stack named '${internalName.get()}'!" +
+                            " Try to stop manually using Docker command: 'docker ${args.joinToString(" ")}}'"
+                    )
                 }
 
                 running

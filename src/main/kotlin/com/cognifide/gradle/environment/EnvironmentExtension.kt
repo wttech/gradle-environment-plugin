@@ -4,6 +4,7 @@ import com.cognifide.gradle.common.CommonExtension
 import com.cognifide.gradle.common.build.Retry
 import com.cognifide.gradle.common.health.HealthChecker
 import com.cognifide.gradle.common.health.HealthStatus
+import com.cognifide.gradle.common.utils.capitalizeChar
 import com.cognifide.gradle.common.utils.using
 import com.cognifide.gradle.environment.docker.Docker
 import com.cognifide.gradle.environment.hosts.HostOptions
@@ -149,7 +150,7 @@ open class EnvironmentExtension(val project: Project) : Serializable {
 
         fun of(project: Project): EnvironmentExtension {
             return project.extensions.findByType(EnvironmentExtension::class.java)
-                    ?: throw EnvironmentException("${project.displayName.capitalize()} must have plugin applied: ${EnvironmentPlugin.ID}")
+                ?: throw EnvironmentException("${project.displayName.capitalizeChar()} must have plugin applied: ${EnvironmentPlugin.ID}")
         }
     }
 }

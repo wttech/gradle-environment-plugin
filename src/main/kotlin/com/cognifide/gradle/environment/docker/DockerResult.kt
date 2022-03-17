@@ -6,7 +6,7 @@ class DockerResult(val base: ProcResult) {
 
     val executionTime: Long get() = base.executionTime
 
-    val procString: String get() = base.procString
+    val procString: String get() = base.commandLine
 
     val exitCode: Int get() = base.exitValue
 

@@ -67,7 +67,7 @@ abstract class Stack(val environment: EnvironmentExtension) {
         fun determine(env: EnvironmentExtension) = env.prop.string("docker.stack")
             ?.let { of(env, it) } ?: Compose(env)
 
-        fun of(env: EnvironmentExtension, name: String): Stack = when (name.toLowerCase()) {
+        fun of(env: EnvironmentExtension, name: String): Stack = when (name.lowercase()) {
             Compose.NAME -> Compose(env)
             Swarm.NAME -> Swarm(env)
             else -> throw DockerException("Unsupported Docker stack '$name'")

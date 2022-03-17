@@ -18,13 +18,15 @@ class DockerExecSpec(docker: Docker) : DockerInvokeSpec(docker) {
     init {
         systemOut()
 
-        commandLine.set(environment.obj.provider {
-            mutableListOf<String>().apply {
-                add("exec")
-                addAll(options.get())
-                add(id.orNull ?: throw DockerException("Docker container ID is not specified!"))
-                addAll(args.get())
+        commandLine.set(
+            environment.obj.provider {
+                mutableListOf<String>().apply {
+                    add("exec")
+                    addAll(options.get())
+                    add(id.orNull ?: throw DockerException("Docker container ID is not specified!"))
+                    addAll(args.get())
+                }
             }
-        })
+        )
     }
 }

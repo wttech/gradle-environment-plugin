@@ -118,10 +118,13 @@ class Docker(val environment: EnvironmentExtension) {
         if (!templateFile.exists()) {
             throw DockerException("Docker compose file template does not exist: $templateFile")
         }
-        return common.prop.expand(templateFile, composeProperties.get() + mapOf(
-            "docker" to this,
-            "project" to common.project
-        )).trim()
+        return common.prop.expand(
+            templateFile,
+            composeProperties.get() + mapOf(
+                "docker" to this,
+                "project" to common.project
+            )
+        ).trim()
     }
 
     fun checkUp() {
@@ -132,13 +135,17 @@ class Docker(val environment: EnvironmentExtension) {
                 Behaviors.waitFor(upCheck.get())
                 message = "Verifying if still up"
                 if (!up) {
-                    throw DockerException(mutableListOf<String>().apply {
-                        add("Docker environment was up only temporarily and its state changed after running up hooks!")
-                        add("Most probably container manager like Docker Swarm has restarted the container" +
-                                " as its entrypoint exited with a non-zero status code.")
-                        add("")
-                        addAll(stack.troubleshoot())
-                    }.joinToString("\n"))
+                    throw DockerException(
+                        mutableListOf<String>().apply {
+                            add("Docker environment was up only temporarily and its state changed after running up hooks!")
+                            add(
+                                "Most probably container manager like Docker Swarm has restarted the container" +
+                                    " as its entrypoint exited with a non-zero status code."
+                            )
+                            add("")
+                            addAll(stack.troubleshoot())
+                        }.joinToString("\n")
+                    )
                 }
             }
         }
@@ -259,14 +266,18 @@ class Docker(val environment: EnvironmentExtension) {
         logger.lifecycle("Starting Docker daemon \"$operation\" with logs written to file: $outFile")
         val runJob = async(Dispatchers.IO) {
             spec.ignoreExitCodes()
-            spec.output.set(when {
-                spec.output.isPresent -> TeeOutputStream(spec.output.get(), outFileStream)
-                else -> outFileStream
-            })
-            spec.errors.set(when {
-                spec.errors.isPresent -> TeeOutputStream(spec.errors.get(), outFileStream)
-                else -> outFileStream
-            })
+            spec.output.set(
+                when {
+                    spec.output.isPresent -> TeeOutputStream(spec.output.get(), outFileStream)
+                    else -> outFileStream
+                }
+            )
+            spec.errors.set(
+                when {
+                    spec.errors.isPresent -> TeeOutputStream(spec.errors.get(), outFileStream)
+                    else -> outFileStream
+                }
+            )
 
             runInternal(spec)
         }

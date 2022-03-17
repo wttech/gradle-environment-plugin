@@ -31,12 +31,16 @@ class HostUpdater(val common: CommonExtension) {
     }
 
     val targetFile = common.obj.file {
-        fileProvider(common.obj.provider {
-            project.file(when {
-                OperatingSystem.current().isWindows -> """C:\Windows\System32\drivers\etc\hosts"""
-                else -> "/etc/hosts"
-            })
-        })
+        fileProvider(
+            common.obj.provider {
+                project.file(
+                    when {
+                        OperatingSystem.current().isWindows -> """C:\Windows\System32\drivers\etc\hosts"""
+                        else -> "/etc/hosts"
+                    }
+                )
+            }
+        )
         common.prop.file("hostUpdater.targetFile")?.let { set(it) }
     }
 
@@ -61,7 +65,8 @@ class HostUpdater(val common: CommonExtension) {
 
         val sectionOld = HostSection.parseAll(osFile.asFile.readText()).firstOrNull { it.name == sectionName }
         if (hosts.isEmpty() && sectionOld == null) {
-            logger.info("Hosts file update is not needed!\n" +
+            logger.info(
+                "Hosts file update is not needed!\n" +
                     "No hosts defined and no existing contents in file '$osFile'"
             )
             return
@@ -69,7 +74,8 @@ class HostUpdater(val common: CommonExtension) {
 
         val sectionNew = HostSection(sectionName, hosts.map { it.text })
         if (!force.get() && sectionOld != null && sectionNew.render() == sectionOld.render()) {
-            logger.info("Hosts file update is not needed!\n" +
+            logger.info(
+                "Hosts file update is not needed!\n" +
                     "Existing contents in file '$osFile' are up-to-date':\n$sectionOld"
             )
             return
@@ -93,9 +99,11 @@ class HostUpdater(val common: CommonExtension) {
             val scriptFile = cwd.resolve("hosts.bat")
             logger.info("Generating hosts updating script: $scriptFile")
 
-            scriptFile.writeText("""
+            scriptFile.writeText(
+                """
                 powershell -command "Start-Process cmd -ArgumentList '/C cd %CD% && java -jar $updaterJar $sectionFile $osFile' -Verb runas"
-            """.trimIndent())
+                """.trimIndent()
+            )
             execAndHandleErrors(listOf("cmd", "/C", scriptFile.toString()))
             return
         }
@@ -104,18 +112,22 @@ class HostUpdater(val common: CommonExtension) {
         logger.info("Generating hosts updating script: $scriptFile")
 
         if (os.isMacOsX && interactive.get()) {
-            scriptFile.writeText("""
+            scriptFile.writeText(
+                """
                     #!/bin/sh
                     osascript -e "do shell script \"java -jar $updaterJar $sectionFile $osFile\" with prompt \"Gradle Environment Hosts\" with administrator privileges" 
-                """.trimIndent())
+                """.trimIndent()
+            )
             execOnMacAndHandleErrors(listOf("sh", scriptFile.toString()))
             return
         }
 
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
                     #!/bin/sh
                     java -jar $updaterJar $sectionFile $osFile
-                """.trimIndent())
+            """.trimIndent()
+        )
         logger.lifecycle("To update environment hosts, run script below as administrator/super-user:\n$scriptFile")
     }
 

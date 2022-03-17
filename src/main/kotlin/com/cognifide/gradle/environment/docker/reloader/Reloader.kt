@@ -45,8 +45,10 @@ open class Reloader(val environment: EnvironmentExtension) {
                     }
                 }
 
-                logger.lifecycle("Watching for container '${container.name}' file changes in directories:\n" +
-                        dirs.joinToString("\n"))
+                logger.lifecycle(
+                    "Watching for container '${container.name}' file changes in directories:\n" +
+                        dirs.joinToString("\n")
+                )
 
                 start()
             }
@@ -60,8 +62,10 @@ open class Reloader(val environment: EnvironmentExtension) {
                 all.getOrPut(re.container) { mutableListOf() }.add(re); all
             }).forEach { (container, changes) ->
                 container.apply {
-                    logger.lifecycle("Reloading container '$name' due to file changes:\n" +
-                            changes.map { it.event }.joinToString("\n"))
+                    logger.lifecycle(
+                        "Reloading container '$name' due to file changes:\n" +
+                            changes.map { it.event }.joinToString("\n")
+                    )
 
                     try {
                         reload()

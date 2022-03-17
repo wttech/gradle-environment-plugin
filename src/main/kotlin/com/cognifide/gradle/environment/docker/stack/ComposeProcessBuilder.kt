@@ -20,10 +20,13 @@ enum class ComposeProcessBuilder(val commandLine: List<String>, val checkArgs: L
             }
         } ?: throw StackException("Failed to detect Docker Compose. Is Docker running / installed?")
 
-        fun of(name: String) = values().firstOrNull { it.name.equals(name, true)
-        } ?: throw StackException(listOf(
-            "Unsupported Docker Compose process builder type named '$name'",
-            "Supported values: ${values().joinToString(", ") { it.name }}"
-        ).joinToString("\n"))
+        fun of(name: String) = values().firstOrNull {
+            it.name.equals(name, true)
+        } ?: throw StackException(
+            listOf(
+                "Unsupported Docker Compose process builder type named '$name'",
+                "Supported values: ${values().joinToString(", ") { it.name }}"
+            ).joinToString("\n")
+        )
     }
 }
