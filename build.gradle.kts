@@ -27,8 +27,8 @@ allprojects {
             withJavadocJar()
         }
         tasks.withType<JavaCompile>().configureEach{
-            sourceCompatibility = JavaVersion.VERSION_11.toString()
-            targetCompatibility = JavaVersion.VERSION_11.toString()
+            sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+            targetCompatibility = JavaVersion.VERSION_1_8.toString()
         }
         tasks.withType<Test>().configureEach {
             testLogging.showStandardStreams = true
@@ -38,7 +38,7 @@ allprojects {
     plugins.withId("kotlin") {
         tasks.withType<KotlinCompile>().configureEach {
             kotlinOptions {
-                jvmTarget = JavaVersion.VERSION_11.toString()
+                jvmTarget = JavaVersion.VERSION_1_8.toString()
             }
         }
     }

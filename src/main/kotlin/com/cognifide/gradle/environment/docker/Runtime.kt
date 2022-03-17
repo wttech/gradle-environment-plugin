@@ -26,7 +26,7 @@ interface Runtime {
         fun determine(env: EnvironmentExtension) = env.prop.string("docker.runtime")
             ?.let { of(env, it) } ?: detect(env) ?: Desktop(env)
 
-        fun of(env: EnvironmentExtension, name: String): Runtime? = when (name.toLowerCase()) {
+        fun of(env: EnvironmentExtension, name: String): Runtime? = when (name.lowercase()) {
             Toolbox.NAME -> Toolbox(env)
             Desktop.NAME -> Desktop(env)
             else -> throw DockerException("Unsupported Docker runtime '$name'")
