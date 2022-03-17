@@ -122,16 +122,7 @@ detekt {
     autoCorrect = true
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("pluginMaven") {
-            from(components["java"])
-        }
-    }
-}
-
 gradlePlugin {
-    isAutomatedPublishing = false
     plugins {
         create("environment") {
             id = "com.cognifide.environment"
