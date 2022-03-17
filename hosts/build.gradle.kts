@@ -7,10 +7,6 @@ plugins {
 description = "Hosts Editor"
 version = ""
 
-repositories {
-    jcenter()
-}
-
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation(project(":common"))
@@ -27,5 +23,6 @@ tasks {
             attributes["Main-Class"] = "MainKt"
         }
         from(configurations.runtimeClasspath.get().files.map { if (it.isDirectory) it else zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.WARN
     }
 }

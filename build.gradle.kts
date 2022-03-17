@@ -1,46 +1,68 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     id("java-gradle-plugin")
     id("maven-publish")
-    id("org.jetbrains.kotlin.jvm") version "1.4.20"
-    id("org.jetbrains.dokka") version "1.4.0-rc"
-    id("com.gradle.plugin-publish") version "0.11.0"
-    id("io.gitlab.arturbosch.detekt") version "1.6.0"
+    id("org.jetbrains.kotlin.jvm") version "1.5.31"
+    id("com.gradle.plugin-publish") version "0.20.0"
+    id("io.gitlab.arturbosch.detekt") version "1.20.0-RC1"
     id("net.researchgate.release") version "2.8.1"
-    id("com.github.breadmoirai.github-release") version "2.2.10"
+    id("com.github.breadmoirai.github-release") version "2.2.12"
 }
 
 defaultTasks("build", "publishToMavenLocal")
 description = "Gradle Environment Plugin"
 group = "com.cognifide.gradle"
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+
+    plugins.withId("java") {
+        java {
+            withSourcesJar()
+            withJavadocJar()
+        }
+        tasks.withType<JavaCompile>().configureEach{
+            sourceCompatibility = JavaVersion.VERSION_11.toString()
+            targetCompatibility = JavaVersion.VERSION_11.toString()
+        }
+        tasks.withType<Test>().configureEach {
+            testLogging.showStandardStreams = true
+            useJUnitPlatform()
+        }
+    }
+    plugins.withId("kotlin") {
+        tasks.withType<KotlinCompile>().configureEach {
+            kotlinOptions {
+                jvmTarget = JavaVersion.VERSION_11.toString()
+            }
+        }
+    }
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.20")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+    // Build environment
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.20.0-RC1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation("com.cognifide.gradle:common-plugin:1.1.0")
 
-    implementation("com.cognifide.gradle:common-plugin:1.0.34")
-    implementation("org.buildobjects:jproc:2.3.0")
-    implementation("org.apache.commons:commons-lang3:3.9")
-    implementation("commons-io:commons-io:2.6")
-    implementation("org.apache.httpcomponents:httpclient:4.5.12")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.3")
+    // External
+    implementation("org.buildobjects:jproc:2.8.0")
+    implementation("org.apache.commons:commons-lang3:3.12.0")
+    implementation("commons-io:commons-io:2.11.0")
+    implementation("org.apache.httpcomponents:httpclient:4.5.13")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.1")
+
+    // Cross-project
     compileOnly(project(":common"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
-
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.6.0")
 }
 
 val functionalTestSourceSet = sourceSets.create("functionalTest")
@@ -64,32 +86,9 @@ tasks {
         from(provider { project(":hosts").tasks.getByName("jar") })
     }
 
-    register<Jar>("sourcesJar") {
-        archiveClassifier.set("sources")
-        dependsOn("classes")
-        from(sourceSets["main"].allSource)
-    }
-
-    dokkaJavadoc {
-        outputDirectory = "$buildDir/javadoc"
-    }
-
-    register<Jar>("javadocJar") {
-        archiveClassifier.set("javadoc")
-        dependsOn("dokkaJavadoc")
-        from("$buildDir/javadoc")
-    }
-
     withType<Test>().configureEach {
         testLogging.showStandardStreams = true
         useJUnitPlatform()
-    }
-
-    withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_1_8.toString()
-            freeCompilerArgs = freeCompilerArgs + "-Xuse-experimental=kotlin.Experimental"
-        }
     }
 
     named<Test>("test") {
@@ -121,20 +120,18 @@ detekt {
     config.from(file("detekt.yml"))
     parallel = true
     autoCorrect = true
-    failFast = true
 }
 
 publishing {
     publications {
-        create<MavenPublication>("mavenJava") {
+        create<MavenPublication>("pluginMaven") {
             from(components["java"])
-            artifact(tasks["sourcesJar"])
-            artifact(tasks["javadocJar"])
         }
     }
 }
 
 gradlePlugin {
+    isAutomatedPublishing = false
     plugins {
         create("environment") {
             id = "com.cognifide.environment"
@@ -186,15 +183,6 @@ githubRelease {
             |
             |None.
             """.trimMargin()
-        }
-    }
-}
-
-allprojects {
-    plugins.withId("java") {
-        tasks.withType<JavaCompile>().configureEach{
-            sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-            targetCompatibility = JavaVersion.VERSION_1_8.toString()
         }
     }
 }

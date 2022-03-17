@@ -43,8 +43,4 @@ data class HostSection(val name: String, val entries: List<String>) {
             return sections
         }
     }
-
-
-
-
 }
