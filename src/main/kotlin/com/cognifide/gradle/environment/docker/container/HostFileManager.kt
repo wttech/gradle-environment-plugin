@@ -40,40 +40,37 @@ class HostFileManager(val container: Container) {
         return files
     }
 
-    fun ensureFile(vararg paths: String, content: String = "") = paths.forEach { path ->
+    fun ensureFilePath(vararg paths: String) = paths.forEach { path ->
         path.takeIf { it.contains("/") }
             ?.substringBeforeLast("/")
             ?.takeIf { it.isNotBlank() }
-            ?.let { ensureDir(it) }
+            ?.let { ensureDirPath(it) }
+        ensureFile(workFile(path))
+    }
 
-        workFile(path).apply {
-            if (!exists()) {
-                logger.info("Ensuring file '$this' for container '${container.name}'")
-                writeText(content)
-            }
+    fun ensureFile(vararg files: File) = files.forEach { file ->
+        if (!file.exists()) {
+            logger.info("Ensuring file '$file' for container '${container.name}'")
+            file.writeText("")
         }
     }
 
-    fun ensureDir() {
-        workDir.get().asFile.apply {
-            logger.info("Ensuring work directory '$this' for container '${container.name}'")
-            mkdirs()
-        }
+    fun ensureDirPath(vararg paths: String) {
+        paths.forEach { path -> ensureDir(workFile(path)) }
     }
 
-    fun ensureDir(vararg paths: String) {
-        paths.forEach { path ->
-            workFile(path).apply {
-                logger.info("Ensuring directory '$this' for container '${container.name}'")
-                mkdirs()
-            }
-        }
+    fun ensureDir() = ensureDir(workDir.get().asFile)
+
+    fun ensureDir(vararg dirs: File) = dirs.forEach { file ->
+        logger.info("Ensuring directory '$file' for container '${container.name}'")
+        file.mkdirs()
     }
 
-    fun cleanDir(vararg paths: String) = paths.forEach { path ->
-        workFile(path).apply {
-            logger.info("Cleaning directory '$this' for container '${container.name}'")
-            deleteRecursively(); mkdirs()
-        }
+    fun cleanDirPath(vararg paths: String) = paths.forEach { path -> cleanDir(workFile(path)) }
+
+    fun cleanDir(vararg dirs: File) = dirs.forEach { dir ->
+        logger.info("Cleaning directory '$dir' for container '${container.name}'")
+        dir.deleteRecursively()
+        dir.mkdirs()
     }
 }
