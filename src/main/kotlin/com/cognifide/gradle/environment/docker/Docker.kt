@@ -12,6 +12,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 
+@Suppress("TooManyFunctions")
 class Docker(val environment: EnvironmentExtension) {
 
     private val logger = environment.logger
@@ -311,6 +312,15 @@ class Docker(val environment: EnvironmentExtension) {
     fun load(composePropertyName: String, fileProvider: () -> File) = load(composePropertyName, common.project.provider { fileProvider() })
 
     fun load(composePropertyName: String, fileProvider: Provider<File>) {
-        composeProperties.putAll(common.project.provider { mapOf(composePropertyName to load(fileProvider.get())) })
+        property(composePropertyName) { load(fileProvider.get()) }
     }
+
+    /**
+     * @see <https://github.com/gradle/gradle/issues/8500>
+     */
+    fun <T> property(name: String, valueProvider: Provider<T>) {
+        composeProperties.putAll(common.project.provider { mapOf(name to valueProvider) })
+    }
+
+    fun <T> property(name: String, valueProvider: () -> T) = property(name, common.project.provider { valueProvider() })
 }
