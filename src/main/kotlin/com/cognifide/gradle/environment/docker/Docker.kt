@@ -315,12 +315,12 @@ class Docker(val environment: EnvironmentExtension) {
         property(composePropertyName) { load(fileProvider.get()) }
     }
 
+    fun <T> property(name: String, valueProvider: () -> T) = property(name, common.project.provider { valueProvider() })
+
     /**
      * @see <https://github.com/gradle/gradle/issues/8500>
      */
     fun <T> property(name: String, valueProvider: Provider<T>) {
-        composeProperties.putAll(common.project.provider { mapOf(name to valueProvider) })
+        composeProperties.putAll(common.project.provider { mapOf(name to valueProvider.get()) })
     }
-
-    fun <T> property(name: String, valueProvider: () -> T) = property(name, common.project.provider { valueProvider() })
 }
