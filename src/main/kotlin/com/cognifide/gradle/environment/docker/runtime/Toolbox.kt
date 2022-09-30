@@ -48,7 +48,7 @@ class Toolbox(environment: EnvironmentExtension) : Base(environment) {
     fun imitateCygpath(path: String): String {
         return Regex("(\\w):/(.*)").matchEntire(path.replace("\\", "/"))?.let {
             val (letter, drivePath) = it.groupValues.drop(1)
-            "/${letter.toLowerCase()}/$drivePath"
+            "/${letter.lowercase()}/$drivePath"
         } ?: path
     }
 

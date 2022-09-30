@@ -64,7 +64,7 @@ class DockerProcess(val commandLine: Iterable<String>) {
     private fun composeException(e: Exception): DockerException = when (e) {
         is ExternalProcessFailureException -> DockerException(
             "Docker command process failure!" +
-                " Command: '${e.command}', error: '${e.stderr}', exit code: '${e.exitValue}'",
+                " Command: '${e.commandLine}', error: '${e.stderr}', exit code: '${e.exitValue}'",
             e
         )
         is TimeoutException -> DockerException("Docker command timeout! Error: '${e.message}'", e)

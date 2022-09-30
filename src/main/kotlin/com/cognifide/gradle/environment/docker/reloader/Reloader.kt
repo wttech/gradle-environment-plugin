@@ -8,7 +8,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import java.util.*
 
-@OptIn(ObsoleteCoroutinesApi::class)
 open class Reloader(val environment: EnvironmentExtension) {
 
     private val common = environment.common

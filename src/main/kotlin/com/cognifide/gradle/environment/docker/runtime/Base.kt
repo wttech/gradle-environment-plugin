@@ -25,5 +25,5 @@ abstract class Base(protected val environment: EnvironmentExtension) : Runtime {
         return this is Toolbox || !(os.isWindows || os.isMacOsX)
     }
 
-    override fun toString(): String = name.toLowerCase()
+    override fun toString(): String = name.lowercase()
 }
