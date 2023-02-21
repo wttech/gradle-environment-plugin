@@ -38,7 +38,7 @@ abstract class Stack(val environment: EnvironmentExtension) {
             }
             return when {
                 result.exitValue == 0 -> true
-                result.errorString.contains("Error: No such network") -> false
+                result.errorString.contains(Regex("(?i)not found|no such")) -> false
                 else -> throw StackException("Unable to determine Docker stack '${internalName.get()}' status. Error: '${result.errorString}'")
             }
         }
