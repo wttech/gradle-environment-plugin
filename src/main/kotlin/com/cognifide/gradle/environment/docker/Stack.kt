@@ -26,7 +26,7 @@ abstract class Stack(val environment: EnvironmentExtension) {
     }
 
     val networkTimeout = common.obj.long {
-        convention(30_000L)
+        convention(60_000L)
         common.prop.long("docker.stack.networkTimeout")?.let { set(it) }
     }
 
